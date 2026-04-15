@@ -1,0 +1,11 @@
+[project]
+name = "ai-test-it-mcp"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+ai-test-it-mcp = "ai_test_it_mcp.server:run"
+
+[tool.setuptools]
+packages = ["ai_test_it_mcp"]

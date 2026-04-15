@@ -1,0 +1,24 @@
+# Copy this file to `.codex/config.toml` and replace placeholders with local paths.
+
+[mcp_servers.jetbrains]
+command = "/path/to/jetbrains/jbr/bin/java"
+args = [
+  "-classpath",
+  "/path/to/pycharm/plugins/mcpserver/lib/mcpserver-frontend.jar:/path/to/pycharm/lib/util-8.jar:/path/to/pycharm/lib/intellij.libraries.kotlinx.coroutines.core.jar:/path/to/pycharm/lib/intellij.libraries.ktor.client.cio.jar:/path/to/pycharm/lib/intellij.libraries.ktor.client.jar:/path/to/pycharm/lib/intellij.libraries.ktor.network.tls.jar:/path/to/pycharm/lib/intellij.libraries.ktor.io.jar:/path/to/pycharm/lib/intellij.libraries.ktor.utils.jar:/path/to/pycharm/lib/intellij.libraries.kotlinx.io.jar:/path/to/pycharm/lib/intellij.libraries.kotlinx.serialization.core.jar:/path/to/pycharm/lib/intellij.libraries.kotlinx.serialization.json.jar",
+  "com.intellij.mcpserver.stdio.McpStdioRunnerKt",
+]
+
+[mcp_servers.jetbrains.env]
+IJ_MCP_SERVER_PORT = "64342"
+
+[mcp_servers.ai_test_it]
+command = "python3"
+args = ["-u", "/absolute/path/to/ai-test-it-mcp/main.py"]
+startup_timeout_sec = 60
+
+[mcp_servers.ai_test_it.env]
+TESTIT_BASE_URL = "https://your-testit.example.com"
+TESTIT_TOKEN = "replace-with-token"
+TESTIT_TIMEOUT_SECONDS = "30"
+TESTIT_VERIFY_SSL = "true"
+LOG_LEVEL = "INFO"
