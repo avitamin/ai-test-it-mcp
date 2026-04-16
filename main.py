@@ -1,4 +1,4 @@
-from ai_test_it_mcp.server import run
+from mcp_server.server import run
 
 
 if __name__ == "__main__":

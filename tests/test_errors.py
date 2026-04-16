@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ai_test_it_mcp.errors import (
+from mcp_server.errors import (
     AuthenticationError,
     NotFoundError,
     RateLimitError,

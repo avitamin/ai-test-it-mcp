@@ -4,8 +4,8 @@ import os
 import unittest
 from unittest.mock import patch
 
-from ai_test_it_mcp.config import Settings
-from ai_test_it_mcp.errors import ConfigurationError
+from mcp_server.config import Settings
+from mcp_server.errors import ConfigurationError
 
 
 class SettingsTests(unittest.TestCase):

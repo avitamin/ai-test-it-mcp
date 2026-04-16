@@ -4,8 +4,8 @@ import io
 import json
 import unittest
 
-from ai_test_it_mcp.mcp_protocol import McpServer, StdioTransport, ToolDefinition
-from ai_test_it_mcp.errors import ValidationError
+from mcp_server.mcp_protocol import McpServer, StdioTransport, ToolDefinition
+from mcp_server.errors import ValidationError
 
 
 class ProtocolTests(unittest.TestCase):

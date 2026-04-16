@@ -1,4 +1,4 @@
-# ai-test-it-mcp
+# mcp-server
 
 MCP server for Test IT REST API.
 
@@ -31,10 +31,10 @@ Important API-specific decisions already reflected in code:
 ## Project Layout
 
 - [main.py](main.py): minimal entrypoint
-- [ai_test_it_mcp/server.py](ai_test_it_mcp/server.py): MCP tool registration and server bootstrap
-- [ai_test_it_mcp/mcp_protocol.py](ai_test_it_mcp/mcp_protocol.py): `stdio` transport and JSON-RPC handling
-- [ai_test_it_mcp/testit_client.py](ai_test_it_mcp/testit_client.py): Test IT HTTP client
-- [ai_test_it_mcp/services.py](ai_test_it_mcp/services.py): tool-level use cases and argument validation
+- [mcp_server/server.py](mcp_server/server.py): MCP tool registration and server bootstrap
+- [mcp_server/mcp_protocol.py](mcp_server/mcp_protocol.py): `stdio` transport and JSON-RPC handling
+- [mcp_server/testit_client.py](mcp_server/testit_client.py): Test IT HTTP client
+- [mcp_server/services.py](mcp_server/services.py): tool-level use cases and argument validation
 - [tests/](tests): unit tests
 - [http_client/testit-smoke.http](http_client/testit-smoke.http): JetBrains HTTP Client smoke checks for upstream Test IT API
 
@@ -83,7 +83,7 @@ python3 main.py
 Or through the console entrypoint declared in `pyproject.toml`:
 
 ```bash
-ai-test-it-mcp
+mcp-server
 ```
 
 The process stays attached to `stdin/stdout` and waits for MCP messages.

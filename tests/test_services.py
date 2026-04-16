@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from ai_test_it_mcp.errors import ValidationError
-from ai_test_it_mcp.services import TestItService
+from mcp_server.errors import ValidationError
+from mcp_server.services import TestItService
 
 
 class FakeClient:

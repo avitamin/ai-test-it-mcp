@@ -18,7 +18,7 @@ def _debug_enabled() -> bool:
 def _debug(message: str) -> None:
     if not _debug_enabled():
         return
-    sys.stderr.write(f"[ai-test-it-mcp] {message}\n")
+    sys.stderr.write(f"[mcp-server] {message}\n")
     sys.stderr.flush()
 
 
@@ -273,7 +273,7 @@ def create_server() -> McpServer:
     _debug(f"create_server: logging configured level={settings.log_level}")
     service = TestItService(TestItClient(settings))
     _debug("create_server: service initialized")
-    return McpServer("ai-test-it-mcp", "0.1.0", build_tools(service))
+    return McpServer("mcp-server", "0.1.0", build_tools(service))
 
 
 def run() -> None:
