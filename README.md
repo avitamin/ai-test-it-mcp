@@ -36,7 +36,7 @@ Important API-specific decisions already reflected in code:
 - [ai_test_it_mcp/testit_client.py](ai_test_it_mcp/testit_client.py): Test IT HTTP client
 - [ai_test_it_mcp/services.py](ai_test_it_mcp/services.py): tool-level use cases and argument validation
 - [tests/](tests): unit tests
-- [smoke/testit-smoke.http](smoke/testit-smoke.http): JetBrains HTTP Client smoke checks for upstream Test IT API
+- [http_client/testit-smoke.http](http_client/testit-smoke.http): JetBrains HTTP Client smoke checks for upstream Test IT API
 
 ## Requirements
 
@@ -384,19 +384,19 @@ Current test coverage includes:
 
 ## Smoke Checks
 
-Use JetBrains HTTP Client files in [smoke/](smoke) to validate the upstream Test IT API assumptions:
+Use JetBrains HTTP Client files in [http_client/](http_client) to validate the upstream Test IT API assumptions:
 
-- [smoke/testit-smoke.http](smoke/testit-smoke.http)
-- [smoke/http-client.env.json](smoke/http-client.env.json)
-- `smoke/http-client.private.env.json` for local secrets
+- [http_client/testit-smoke.http](http_client/testit-smoke.http)
+- [http_client/http-client.env.json](http_client/http-client.env.json)
+- `http_client/http-client.private.env.json` for local secrets
 
 These smoke checks validate Test IT endpoints directly, not the MCP `stdio` protocol.
 
 ## JetBrains HTTP Client Setup
 
-1. Open `smoke/testit-smoke.http`
-2. Select the desired environment from `smoke/http-client.env.json`
-3. Keep private secrets in `smoke/http-client.private.env.json`
+1. Open `http_client/testit-smoke.http`
+2. Select the desired environment from `http_client/http-client.env.json`
+3. Keep private secrets in `http_client/http-client.private.env.json`
 4. Run requests one by one
 
 Recommended minimum sequence:

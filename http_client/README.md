@@ -1,6 +1,6 @@
-# Smoke checks
+# HTTP Client smoke checks
 
-`smoke/testit-smoke.http` is a JetBrains HTTP Client collection for validating the Test IT REST API assumptions used by this MCP server.
+`http_client/testit-smoke.http` is a JetBrains HTTP Client collection for validating the Test IT REST API assumptions used by this MCP server.
 
 Main project documentation lives in [README.md](../README.md).
 
@@ -18,8 +18,8 @@ Main project documentation lives in [README.md](../README.md).
 
 ## How to run
 
-1. Fill `smoke/http-client.env.json`
-2. Open `smoke/testit-smoke.http` in IntelliJ IDEA or PyCharm
+1. Fill `http_client/http-client.env.json`
+2. Open `http_client/testit-smoke.http` in IntelliJ IDEA or PyCharm
 3. Select the `local` environment
 4. Run requests one by one
 

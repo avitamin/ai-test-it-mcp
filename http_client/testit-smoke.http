@@ -1,7 +1,7 @@
 ### JetBrains HTTP Client smoke for Test IT REST API
 ### Usage:
 ### 1. Select environment: `local`
-### 2. Fill values in `smoke/http-client.env.json`
+### 2. Fill values in `http_client/http-client.env.json`
 ### 3. Run requests one by one
 ###
 ### This checks the same auth/header style and core endpoints that the MCP server uses.
