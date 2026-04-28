@@ -14,7 +14,13 @@ MCP-сервер для Test IT REST API. Он работает через JSON-
 
 ## Быстрый старт
 
-Настройте обязательное окружение:
+Обычно этот server подключают к MCP client, например Codex или Claude Code. Клиент сам запускает server process и общается с ним через `stdio`.
+
+Используйте client setup guide:
+
+- [Быстрый старт для Codex и Claude Code](docs/mcp-client-quickstart.ru.md)
+
+При настройке клиента понадобятся эти Test IT values:
 
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
@@ -23,7 +29,11 @@ export TESTIT_TOKEN="your-token"
 
 `TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет префикс `Bearer`.
 
-Запустите сервер напрямую:
+## Прямой запуск
+
+Прямой запуск полезен для локальных проверок, разработки и protocol debugging.
+
+Запустите server из репозитория:
 
 ```bash
 python3 main.py
@@ -64,6 +74,7 @@ mcp-server
 ## Куда идти дальше
 
 - [Индекс документации](docs/README.ru.md)
+- [Быстрый старт для Codex и Claude Code](docs/mcp-client-quickstart.ru.md)
 - [Usage и конфигурация](docs/usage.ru.md)
 - [Каталог MCP tools](docs/mcp-tools.ru.md)
 - [Заметки по разработке](docs/development.ru.md)

@@ -2,7 +2,29 @@
 
 ## Source Priority
 
-Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `README.ru.md`, `pyproject.toml`, `.codex/config.example.toml`, `docs/README.md`, `docs/README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, `docs/development.md`, `docs/development.ru.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, `http_client/README.ru.md`, and the current project source tree.
+Fact: This guide is generated from repository facts in:
+
+- `AGENTS.md`
+- `README.md`
+- `README.ru.md`
+- `pyproject.toml`
+- `.codex/config.example.toml`
+- `docs/README.md`
+- `docs/README.ru.md`
+- `docs/usage.md`
+- `docs/usage.ru.md`
+- `docs/mcp-client-quickstart.md`
+- `docs/mcp-client-quickstart.ru.md`
+- `docs/mcp-tools.md`
+- `docs/mcp-tools.ru.md`
+- `docs/development.md`
+- `docs/development.ru.md`
+- `docs/codex-workflow.md`
+- `docs/codex-mcp-setup.md`
+- `docs/repo-commit-guide.md`
+- `http_client/README.md`
+- `http_client/README.ru.md`
+- the current project source tree
 
 AI agents must use English documentation as the canonical source. For normal repository work, read one language path per topic: English by default for agents, or Russian for Russian-speaking human readers. Do not read both language counterparts unless the task is translation maintenance, EN/RU synchronization, link validation, or investigation of a suspected mismatch.
 
@@ -27,6 +49,8 @@ Conservative default: document current repository behavior only. Do not describe
 - `docs/usage.ru.md`: Russian counterpart to `docs/usage.md`.
 - `docs/mcp-tools.md`: canonical English MCP tool catalog, required arguments, pagination, normalized response shape, and error model.
 - `docs/mcp-tools.ru.md`: Russian counterpart to `docs/mcp-tools.md`.
+- `docs/mcp-client-quickstart.md`: canonical English quick start for connecting this server to Codex and Claude Code MCP clients.
+- `docs/mcp-client-quickstart.ru.md`: Russian counterpart to `docs/mcp-client-quickstart.md`.
 - `docs/development.md`: canonical English maintainer-facing project layout, tests, smoke-check workflow, API-shape notes, limitations, and repository guide links.
 - `docs/development.ru.md`: Russian counterpart to `docs/development.md`.
 - `http_client/README.md`: canonical English JetBrains HTTP Client smoke-check instructions and upstream Test IT API assumptions.
@@ -43,6 +67,7 @@ Each document must have one primary responsibility. Use this guide to keep docs 
 
 - `README.md`: project overview, quick start, top-level navigation, project layout, and test command.
 - `docs/usage.md`: setup, configuration, run commands, MCP protocol basics, and runnable JSON-RPC examples.
+- `docs/mcp-client-quickstart.md`: Codex and Claude Code MCP client setup for this repository's local `stdio` server.
 - `docs/mcp-tools.md`: public MCP tool reference, required arguments, pagination, response shape, and error model.
 - `docs/development.md`: maintainer workflow, tests, API-shape assumptions, limitations, and validation guidance.
 - `http_client/README.md`: JetBrains HTTP Client smoke-check procedure and local environment setup.
@@ -72,6 +97,7 @@ Agent-facing documentation should be dense, canonical, and low-noise.
 ## Document Ownership
 
 - Runtime entrypoints and packaging facts are owned by `main.py`, `mcp_server/server.py`, and `pyproject.toml`; user-facing run instructions are documented in `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md`.
+- MCP client quick-start commands for Codex and Claude Code are documented in `docs/mcp-client-quickstart.md` and `docs/mcp-client-quickstart.ru.md`.
 - MCP tool names, descriptions, input schemas, and server bootstrap behavior are owned by `mcp_server/server.py`; the public tool catalog is documented in `docs/mcp-tools.md` and `docs/mcp-tools.ru.md`.
 - MCP transport, JSON-RPC handling, supported methods, response shape, and protocol framing are owned by `mcp_server/mcp_protocol.py`; user-facing protocol examples are documented in `docs/usage.md` and `docs/usage.ru.md`.
 - Test IT HTTP routes, request methods, query/body shaping, authentication header behavior, response extraction, and upstream error handling are owned by `mcp_server/testit_client.py`.
@@ -88,6 +114,7 @@ Before changing documentation, verify facts against the relevant sources:
 
 - Project purpose, layout, requirements, setup, and run commands: check `README.md`, `README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `AGENTS.md`, `pyproject.toml`, `main.py`, and `mcp_server/server.py`.
 - Configuration docs: check `mcp_server/config.py`, `docs/usage.md`, `docs/usage.ru.md`, `README.md`, `README.ru.md`, and `AGENTS.md`.
+- MCP client quick-start docs: check `docs/mcp-client-quickstart.md`, `docs/mcp-client-quickstart.ru.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, official Codex MCP docs, official Claude Code MCP docs, `main.py`, `mcp_server/server.py`, and `mcp_server/config.py`.
 - MCP protocol docs: check `mcp_server/mcp_protocol.py`, `mcp_server/server.py`, `docs/usage.md`, `docs/usage.ru.md`, and protocol tests in `tests/`.
 - MCP tool docs or examples: check `mcp_server/server.py`, `mcp_server/services.py`, `mcp_server/testit_client.py`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, and service/server tests in `tests/`.
 - Test IT REST API assumptions: check `mcp_server/testit_client.py`, `http_client/testit-smoke.http`, `http_client/README.md`, `http_client/README.ru.md`, `docs/development.md`, and `docs/development.ru.md`.
@@ -108,6 +135,7 @@ Use this ownership map for common feature impacts:
 
 - MCP tool names, descriptions, input schemas, arguments, response shape, pagination, or error model: update `docs/mcp-tools.md` and `docs/mcp-tools.ru.md`.
 - Setup, environment variables, run commands, protocol examples, or user-facing runtime behavior: update `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md` as applicable.
+- MCP client setup for Codex or Claude Code: update `docs/mcp-client-quickstart.md`, `docs/mcp-client-quickstart.ru.md`, and relevant index links.
 - Maintainer workflow, tests, limitations, API-shape notes, or upstream smoke-check guidance: update `docs/development.md`, `docs/development.ru.md`, `http_client/README.md`, and `http_client/README.ru.md` as applicable.
 - Agent workflow, MCP setup, documentation ownership, validation rules, or handoff expectations: update `AGENTS.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, or this guide as applicable.
 

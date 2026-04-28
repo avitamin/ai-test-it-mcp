@@ -14,7 +14,13 @@ The project is a lightweight Python 3.12 server with no external runtime depende
 
 ## Quick Start
 
-Configure the required environment:
+Most users connect this server to an MCP client such as Codex or Claude Code. The client starts the server process and communicates with it over `stdio`.
+
+Use the client setup guide:
+
+- [Codex and Claude Code quick start](docs/mcp-client-quickstart.md)
+
+You will need these Test IT values when configuring the client:
 
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
@@ -23,7 +29,11 @@ export TESTIT_TOKEN="your-token"
 
 `TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
 
-Start the server directly:
+## Run Directly
+
+Direct startup is useful for local checks, development, and protocol debugging.
+
+Start the server from the repository:
 
 ```bash
 python3 main.py
@@ -64,6 +74,7 @@ Notable behavior:
 ## Where To Go Next
 
 - [Documentation index](docs/README.md)
+- [Codex and Claude Code quick start](docs/mcp-client-quickstart.md)
 - [Usage and configuration](docs/usage.md)
 - [MCP tool catalog](docs/mcp-tools.md)
 - [Development notes](docs/development.md)
