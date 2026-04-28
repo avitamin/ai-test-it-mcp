@@ -35,6 +35,36 @@ Conservative default: document current repository behavior only. Do not describe
 - `docs/repo-documentation-guide.md`: local documentation workflow, ownership, source priority, verification matrix, and indexing policy.
 - `AGENTS.md`: contributor-facing repository guidelines for structure, style, tests, commits, and security.
 
+## Documentation Responsibility Model
+
+Each document must have one primary responsibility. Use this guide to keep docs focused, discoverable, and cheap for AI agents to load into context.
+
+- `README.md`: project overview, quick start, top-level navigation, project layout, and test command.
+- `docs/usage.md`: setup, configuration, run commands, MCP protocol basics, and runnable JSON-RPC examples.
+- `docs/mcp-tools.md`: public MCP tool reference, required arguments, pagination, response shape, and error model.
+- `docs/development.md`: maintainer workflow, tests, API-shape assumptions, limitations, and validation guidance.
+- `http_client/README.md`: JetBrains HTTP Client smoke-check procedure and local environment setup.
+- `docs/repo-commit-guide.md`: commit, branch, staging, and validation workflow.
+- `docs/repo-documentation-guide.md`: documentation policy, ownership, verification, indexing, and AI context hygiene.
+
+Do not mix unrelated document types unless one is clearly subordinate to the primary responsibility. If a section grows into a second responsibility, move the detail to the owner document and leave a short link from the original location.
+
+Use these mental models as operational checks, not as extra theory to document:
+
+- Diataxis: choose whether the content is tutorial, how-to, reference, or explanation before editing.
+- Pareto: optimize for the small set of facts needed in most tasks, such as commands, environment variables, tool names, response shapes, ownership, validation rules, and known limitations.
+- Occam: prefer the smallest structure that lets the reader complete the task correctly. Do not create a new document, table, checklist, taxonomy, or abstraction unless it removes real ambiguity.
+
+## AI Context Hygiene
+
+Agent-facing documentation should be dense, canonical, and low-noise.
+
+- Put discovery maps in indexes, facts in owner documents, and process rules in repo guides.
+- Prefer links to stable owner documents instead of copying full commands, schemas, examples, or explanations across files.
+- Keep rare edge cases, historical context, and verbose rationale below common workflows or in maintainer-facing docs.
+- Avoid speculative architecture, broad principles, or "nice to know" commentary unless the information changes an implementation or maintenance decision.
+- For AI work, load English canonical docs by default and avoid loading Russian counterparts unless the task is translation sync, link validation, or mismatch investigation.
+
 ## Document Ownership
 
 - Runtime entrypoints and packaging facts are owned by `main.py`, `mcp_server/server.py`, and `pyproject.toml`; user-facing run instructions are documented in `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md`.
@@ -112,6 +142,7 @@ A documentation task is complete when:
 2. Claims have been checked against the verification matrix for that topic.
 3. New or changed links point to existing paths.
 4. Markdown has been read back for obvious formatting issues.
-5. Tests or commands are run only when they are relevant to the documentation change; for docs-only edits, readback is sufficient unless the user asks for more validation.
-6. For feature or behavior changes, documentation impact has been updated or explicitly marked as not applicable with checked sources.
-7. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.
+5. The document still has one primary responsibility, and duplicated context has been replaced with links where possible.
+6. Tests or commands are run only when they are relevant to the documentation change; for docs-only edits, readback is sufficient unless the user asks for more validation.
+7. For feature or behavior changes, documentation impact has been updated or explicitly marked as not applicable with checked sources.
+8. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.
