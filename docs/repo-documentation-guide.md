@@ -2,14 +2,14 @@
 
 ## Source Priority
 
-Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `pyproject.toml`, `docs/repo-commit-guide.md`, `http_client/README.md`, and the current project source tree.
+Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `pyproject.toml`, `docs/README.md`, `docs/usage.md`, `docs/mcp-tools.md`, `docs/development.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, and the current project source tree.
 
 Use this priority when sources conflict:
 
 1. Explicit user request for the current documentation task.
 2. This `docs/repo-documentation-guide.md`.
 3. Repository guidance in `AGENTS.md`.
-4. User-facing docs such as `README.md` and `http_client/README.md`.
+4. User-facing docs such as `README.md`, `docs/README.md`, `docs/usage.md`, `docs/mcp-tools.md`, `docs/development.md`, and `http_client/README.md`.
 5. Current code, tests, and configuration files.
 6. Existing workflow docs under `docs/`.
 
@@ -17,7 +17,11 @@ Conservative default: document current repository behavior only. Do not describe
 
 ## Documentation Map
 
-- `README.md`: main user-facing project overview, setup, configuration, run commands, MCP protocol summary, and examples.
+- `README.md`: short user-facing project overview, quick start, top-level navigation, project layout, and test command.
+- `docs/README.md`: documentation index for user and maintainer docs.
+- `docs/usage.md`: setup, configuration, run commands, MCP protocol summary, and JSON-RPC examples.
+- `docs/mcp-tools.md`: MCP tool catalog, required arguments, pagination, normalized response shape, and error model.
+- `docs/development.md`: maintainer-facing project layout, tests, smoke-check workflow, API-shape notes, limitations, and repository guide links.
 - `http_client/README.md`: JetBrains HTTP Client smoke-check instructions and upstream Test IT API assumptions.
 - `docs/repo-commit-guide.md`: local commit message, staging, branch, and validation workflow.
 - `docs/repo-documentation-guide.md`: local documentation workflow, ownership, source priority, verification matrix, and indexing policy.
@@ -25,28 +29,28 @@ Conservative default: document current repository behavior only. Do not describe
 
 ## Document Ownership
 
-- Runtime entrypoints and packaging facts are owned by `main.py`, `mcp_server/server.py`, and `pyproject.toml`.
-- MCP tool names, descriptions, input schemas, and server bootstrap behavior are owned by `mcp_server/server.py`.
-- MCP transport, JSON-RPC handling, supported methods, response shape, and protocol framing are owned by `mcp_server/mcp_protocol.py`.
+- Runtime entrypoints and packaging facts are owned by `main.py`, `mcp_server/server.py`, and `pyproject.toml`; user-facing run instructions are documented in `README.md` and `docs/usage.md`.
+- MCP tool names, descriptions, input schemas, and server bootstrap behavior are owned by `mcp_server/server.py`; the public tool catalog is documented in `docs/mcp-tools.md`.
+- MCP transport, JSON-RPC handling, supported methods, response shape, and protocol framing are owned by `mcp_server/mcp_protocol.py`; user-facing protocol examples are documented in `docs/usage.md`.
 - Test IT HTTP routes, request methods, query/body shaping, authentication header behavior, response extraction, and upstream error handling are owned by `mcp_server/testit_client.py`.
 - Tool-level validation, default pagination, required arguments, filters, and use-case orchestration are owned by `mcp_server/services.py`.
-- Configuration environment variables, defaults, and parsing rules are owned by `mcp_server/config.py`.
-- Shared response models and pagination shape are owned by `mcp_server/models.py`.
-- Error categories, payload shape, and HTTP status mapping are owned by `mcp_server/errors.py`.
-- Offline unit-test expectations are owned by `tests/`.
-- Manual upstream API smoke-check assumptions are owned by `http_client/testit-smoke.http` and `http_client/README.md`.
+- Configuration environment variables, defaults, and parsing rules are owned by `mcp_server/config.py`; user-facing configuration docs live in `docs/usage.md`.
+- Shared response models and pagination shape are owned by `mcp_server/models.py`; public pagination documentation lives in `docs/mcp-tools.md`.
+- Error categories, payload shape, and HTTP status mapping are owned by `mcp_server/errors.py`; public error documentation lives in `docs/mcp-tools.md`.
+- Offline unit-test expectations are owned by `tests/`; maintainer-facing test instructions live in `docs/development.md`.
+- Manual upstream API smoke-check assumptions are owned by `http_client/testit-smoke.http` and `http_client/README.md`; maintainer-facing workflow notes live in `docs/development.md`.
 
 ## Verification Matrix
 
 Before changing documentation, verify facts against the relevant sources:
 
-- Project purpose, layout, requirements, setup, and run commands: check `README.md`, `AGENTS.md`, `pyproject.toml`, `main.py`, and `mcp_server/server.py`.
-- Configuration docs: check `mcp_server/config.py`, `README.md`, and `AGENTS.md`.
-- MCP protocol docs: check `mcp_server/mcp_protocol.py`, `mcp_server/server.py`, and protocol tests in `tests/`.
-- MCP tool docs or examples: check `mcp_server/server.py`, `mcp_server/services.py`, `mcp_server/testit_client.py`, and service/server tests in `tests/`.
-- Test IT REST API assumptions: check `mcp_server/testit_client.py`, `http_client/testit-smoke.http`, and `http_client/README.md`.
-- Error behavior: check `mcp_server/errors.py`, `mcp_server/mcp_protocol.py`, and `tests/test_errors.py`.
-- Test instructions and coverage claims: check `AGENTS.md`, `README.md`, `pyproject.toml`, and `tests/`.
+- Project purpose, layout, requirements, setup, and run commands: check `README.md`, `docs/usage.md`, `AGENTS.md`, `pyproject.toml`, `main.py`, and `mcp_server/server.py`.
+- Configuration docs: check `mcp_server/config.py`, `docs/usage.md`, `README.md`, and `AGENTS.md`.
+- MCP protocol docs: check `mcp_server/mcp_protocol.py`, `mcp_server/server.py`, `docs/usage.md`, and protocol tests in `tests/`.
+- MCP tool docs or examples: check `mcp_server/server.py`, `mcp_server/services.py`, `mcp_server/testit_client.py`, `docs/mcp-tools.md`, and service/server tests in `tests/`.
+- Test IT REST API assumptions: check `mcp_server/testit_client.py`, `http_client/testit-smoke.http`, `http_client/README.md`, and `docs/development.md`.
+- Error behavior: check `mcp_server/errors.py`, `mcp_server/mcp_protocol.py`, `docs/mcp-tools.md`, and `tests/test_errors.py`.
+- Test instructions and coverage claims: check `AGENTS.md`, `README.md`, `docs/development.md`, `pyproject.toml`, and `tests/`.
 - Commit or branch workflow docs: check `docs/repo-commit-guide.md`, `AGENTS.md`, current git state, and recent history when available.
 
 If sources disagree, prefer the higher-priority source and call out the unresolved discrepancy in the final response or in the edited document when it affects readers.
@@ -57,7 +61,8 @@ Prefer updating the existing owner document for a topic. Create a new document o
 
 Add or update index links only when the document is user-facing or needed for navigation:
 
-- Link from `README.md` for user-facing setup, usage, protocol, or workflow docs that readers need outside agent workflows.
+- Link from `README.md` to `docs/README.md` and user-facing setup, usage, protocol, tool, development, or smoke-check docs that readers need outside agent workflows.
+- Link from `docs/README.md` to user and maintainer documents under `docs/`, plus nearby owner documents such as `http_client/README.md` and `AGENTS.md`.
 - Link from a nearby owner document when a specialized document extends that document's topic.
 - Do not add README links for internal repo guides unless the user asks or discoverability becomes a practical problem.
 

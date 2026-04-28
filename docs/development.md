@@ -1,0 +1,76 @@
+# Development Notes
+
+## Project Layout
+
+- `main.py`: minimal local entrypoint
+- `mcp_server/server.py`: MCP tool registration and server bootstrap
+- `mcp_server/mcp_protocol.py`: `stdio` transport and JSON-RPC handling
+- `mcp_server/testit_client.py`: Test IT HTTP client
+- `mcp_server/services.py`: tool-level use cases and argument validation
+- `mcp_server/config.py`: environment configuration parsing
+- `mcp_server/models.py`: shared response and pagination models
+- `mcp_server/errors.py`: error categories and HTTP status mapping
+- `tests/`: offline unit tests
+- `http_client/`: JetBrains HTTP Client smoke checks for upstream Test IT API assumptions
+
+## Testing
+
+Run the full unit test suite:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Current test coverage includes:
+
+- config parsing
+- error mapping
+- MCP protocol basics
+- service-layer validation and request shaping
+
+Tests use the standard library `unittest`. Keep tests offline with small fake clients or mocks.
+
+## Smoke Checks
+
+Use JetBrains HTTP Client files in [http_client/](../http_client/) to validate the upstream Test IT API assumptions:
+
+- [http_client/testit-smoke.http](../http_client/testit-smoke.http)
+- [http_client/http-client.env.json](../http_client/http-client.env.json)
+- `http_client/http-client.private.env.json` for local secrets
+
+Recommended minimum sequence:
+
+1. `List projects`
+2. `List test plans`
+3. `List test suites` after you have a real `testPlanId`
+4. `List test runs`
+5. `List test results`
+
+These smoke checks validate Test IT endpoints directly, not the MCP `stdio` protocol. JetBrains HTTP Client speaks HTTP, while this MCP server currently uses `stdio` JSON-RPC.
+
+## API Shape Notes
+
+This server does not blindly mirror all Test IT endpoints.
+
+The MCP surface is normalized for LLM/tool callers, but some upstream API constraints still matter:
+
+- `list_test_suites` needs `testPlanId`
+- `list_test_runs` is project-scoped and expects state flags
+- `list_test_results` is search-based, not a simple collection `GET`
+- some list endpoints in Test IT return arrays directly, not paginated envelopes
+
+If you change API routing assumptions, validate them against the live Swagger first. The most likely breakages are endpoint shape differences between Test IT deployments.
+
+## Limitations
+
+- no attachments support in v1
+- no MCP `resources` or `prompts`
+- no bulk operations except link/unlink style operations already exposed
+- some create/update payloads are passed through with minimal normalization, so callers should stay close to real Test IT field names where required
+- the implementation is intentionally lightweight and uses the Python standard library HTTP stack instead of `httpx`
+
+## Repository Guides
+
+- [Repo commit guide](repo-commit-guide.md)
+- [Repo documentation guide](repo-documentation-guide.md)
+- [Repository guidelines](../AGENTS.md)
