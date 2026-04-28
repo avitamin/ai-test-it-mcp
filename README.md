@@ -2,33 +2,19 @@
 
 [English](README.md) | [Русский](README.ru.md)
 
-MCP server for the Test IT REST API.
+MCP server for the Test IT REST API. It runs over `stdio` JSON-RPC and exposes MCP tools for projects, test plans, test suites, test cases, test runs, test results, and links between cases and suites or plans.
 
-The server uses `stdio` JSON-RPC and exposes task-oriented MCP tools for working with projects, test plans, test suites, test cases, test runs, and test results.
+The project is a lightweight Python 3.12 server with no external runtime dependencies.
 
-## Status
-
-The project is implemented as a lightweight Python 3.12 server with no external runtime dependencies.
-
-The current implementation is aligned to a Test IT Swagger contract. Use the Swagger UI and OpenAPI source exposed by your own Test IT instance when validating endpoint assumptions.
-
-Important API-specific decisions already reflected in code:
-
-- auth header is `Authorization: Bearer <token>`
-- test suites are listed by test plan, not by project
-- test plans are listed by project
-- test runs are listed by project with explicit state flags
-- test results are searched through `POST /api/v2/testResults/search`
-
-## Quick Start
-
-Requirements:
+## Requirements
 
 - Python `3.12+`
 - access to a Test IT instance
-- valid API token
+- valid Test IT API token
 
-Configure the environment:
+## Quick Start
+
+Configure the required environment:
 
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
@@ -43,22 +29,46 @@ Start the server directly:
 python3 main.py
 ```
 
-Or through the console entrypoint declared in `pyproject.toml`:
+Or install the package in editable mode and use the console entrypoint:
 
 ```bash
+python3 -m pip install -e .
 mcp-server
 ```
 
 The process stays attached to `stdin/stdout` and waits for MCP messages.
 
-## Documentation
+## What You Can Do
+
+The tool set covers common Test IT workflows:
+
+- list and fetch projects
+- list, create, update, and fetch test plans and test suites
+- search, create, update, fetch, and delete test cases
+- list, create, update, fetch, and complete test runs
+- list, create, update, and fetch test results
+- link or unlink test cases to a test suite or test plan
+
+See [MCP tool catalog](docs/mcp-tools.md) for required arguments, pagination, response shape, and error behavior.
+
+## API Notes
+
+The implementation follows assumptions validated against a Test IT Swagger contract. Use the Swagger UI and OpenAPI source exposed by your own Test IT instance when checking endpoint behavior.
+
+Notable behavior:
+
+- test suites are listed by test plan, not by project
+- test plans and test runs are listed by project
+- test results are searched through `POST /api/v2/testResults/search`
+
+## Where To Go Next
 
 - [Documentation index](docs/README.md)
-- [Russian documentation index](docs/README.ru.md)
 - [Usage and configuration](docs/usage.md)
 - [MCP tool catalog](docs/mcp-tools.md)
 - [Development notes](docs/development.md)
 - [HTTP Client smoke checks](http_client/README.md)
+- [Russian documentation index](docs/README.ru.md)
 
 ## Project Layout
 
@@ -68,7 +78,7 @@ The process stays attached to `stdin/stdout` and waits for MCP messages.
 - [mcp_server/testit_client.py](mcp_server/testit_client.py): Test IT HTTP client
 - [mcp_server/services.py](mcp_server/services.py): tool-level use cases and argument validation
 - [tests/](tests): unit tests
-- [http_client/testit-smoke.http](http_client/testit-smoke.http): JetBrains HTTP Client smoke checks for upstream Test IT API
+- [http_client/testit-smoke.http](http_client/testit-smoke.http): JetBrains HTTP Client smoke checks
 
 ## Testing
 
