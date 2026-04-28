@@ -21,6 +21,7 @@ Required:
 
 Optional:
 
+- `TESTIT_AUTH_TYPE`, default `private_token`; supported values are `private_token` and `bearer`
 - `TESTIT_TIMEOUT_SECONDS`, default `30`
 - `TESTIT_VERIFY_SSL`, default `true`
 - `LOG_LEVEL`, default `INFO`
@@ -30,12 +31,13 @@ Example:
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
 export TESTIT_TOKEN="your-token"
+export TESTIT_AUTH_TYPE="private_token"
 export TESTIT_TIMEOUT_SECONDS="30"
 export TESTIT_VERIFY_SSL="true"
 export LOG_LEVEL="INFO"
 ```
 
-`TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
+`TESTIT_TOKEN` must contain only the raw token value. The server adds the authorization prefix itself. By default it sends `Authorization: PrivateToken <token>` for Test IT private API tokens documented as `PrivateToken {API Secret Key}`. Use `TESTIT_AUTH_TYPE=bearer` to send `Authorization: Bearer <token>` only when a Bearer token is intentionally needed.
 
 Boolean values such as `TESTIT_VERIFY_SSL` accept `1`, `true`, `yes`, and `on` for true, or `0`, `false`, `no`, and `off` for false.
 

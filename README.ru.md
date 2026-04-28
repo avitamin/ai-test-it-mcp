@@ -14,7 +14,7 @@ MCP-сервер для Test IT REST API.
 
 Важные API-specific решения уже отражены в коде:
 
-- auth header: `Authorization: Bearer <token>`
+- auth header: `Authorization: PrivateToken <token>` по умолчанию или `Authorization: Bearer <token>` при `TESTIT_AUTH_TYPE=bearer`
 - тестовые наборы запрашиваются по тест-плану, а не по проекту
 - тест-планы запрашиваются по проекту
 - тест-раны запрашиваются по проекту с явными state flags
@@ -33,9 +33,11 @@ MCP-сервер для Test IT REST API.
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
 export TESTIT_TOKEN="your-token"
+# Optional: private_token или bearer; default is private_token.
+export TESTIT_AUTH_TYPE="private_token"
 ```
 
-`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет префикс `Bearer`.
+`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет authorization prefix. По умолчанию используются приватные API-токены Test IT, документированные как `PrivateToken {API Secret Key}`. Используйте `TESTIT_AUTH_TYPE=bearer`, только если нужен Bearer token.
 
 Запустите сервер напрямую:
 

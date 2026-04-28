@@ -42,7 +42,7 @@ Useful repository-specific constraints:
 - Keep tests offline with `unittest` fakes or mocks.
 - Use English docs as canonical for agent and maintainer work.
 - Do not commit real Test IT tokens, private endpoints, project IDs, or UUIDs.
-- Preserve the rule that `TESTIT_TOKEN` is raw and the server adds `Bearer`.
+- Preserve the rule that `TESTIT_TOKEN` is raw, `TESTIT_AUTH_TYPE` controls the prefix, and `private_token` is the default.
 
 ## Feature Development Flow
 

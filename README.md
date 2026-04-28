@@ -14,7 +14,7 @@ The current implementation is aligned to a Test IT Swagger contract. Use the Swa
 
 Important API-specific decisions already reflected in code:
 
-- auth header is `Authorization: Bearer <token>`
+- auth header is `Authorization: PrivateToken <token>` by default, or `Authorization: Bearer <token>` when `TESTIT_AUTH_TYPE=bearer`
 - test suites are listed by test plan, not by project
 - test plans are listed by project
 - test runs are listed by project with explicit state flags
@@ -33,9 +33,11 @@ Configure the environment:
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
 export TESTIT_TOKEN="your-token"
+# Optional: private_token or bearer; default is private_token.
+export TESTIT_AUTH_TYPE="private_token"
 ```
 
-`TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
+`TESTIT_TOKEN` must contain only the raw token value. The server adds the authorization prefix itself. By default, it uses Test IT private API tokens documented as `PrivateToken {API Secret Key}`. Use `TESTIT_AUTH_TYPE=bearer` only when a Bearer token is intentionally needed.
 
 Start the server directly:
 
