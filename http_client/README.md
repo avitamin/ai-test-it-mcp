@@ -1,5 +1,7 @@
 # HTTP Client smoke checks
 
+[English](README.md) | [Русский](README.ru.md)
+
 `http_client/testit-smoke.http` is a JetBrains HTTP Client collection for validating the Test IT REST API assumptions used by this MCP server.
 
 Main project documentation lives in [README.md](../README.md).

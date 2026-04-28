@@ -1,31 +1,31 @@
-# Usage And Configuration
+# Usage и конфигурация
 
 [English](usage.md) | [Русский](usage.ru.md)
 
-## Requirements
+## Требования
 
 - Python `3.12+`
-- access to a Test IT instance
-- valid API token
+- доступ к Test IT instance
+- валидный API token
 
-The package has no external runtime dependencies.
+Пакет не имеет внешних runtime-зависимостей.
 
-## Configuration
+## Конфигурация
 
-The server reads configuration from environment variables.
+Сервер читает конфигурацию из environment variables.
 
-Required:
+Обязательные:
 
 - `TESTIT_BASE_URL`
 - `TESTIT_TOKEN`
 
-Optional:
+Опциональные:
 
 - `TESTIT_TIMEOUT_SECONDS`, default `30`
 - `TESTIT_VERIFY_SSL`, default `true`
 - `LOG_LEVEL`, default `INFO`
 
-Example:
+Пример:
 
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
@@ -35,51 +35,51 @@ export TESTIT_VERIFY_SSL="true"
 export LOG_LEVEL="INFO"
 ```
 
-`TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
+`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет префикс `Bearer`.
 
-Boolean values such as `TESTIT_VERIFY_SSL` accept `1`, `true`, `yes`, and `on` for true, or `0`, `false`, `no`, and `off` for false.
+Boolean values, такие как `TESTIT_VERIFY_SSL`, принимают `1`, `true`, `yes` и `on` как true, либо `0`, `false`, `no` и `off` как false.
 
-## Run
+## Запуск
 
-Start the server directly:
+Запустите сервер напрямую:
 
 ```bash
 python3 main.py
 ```
 
-Or through the console entrypoint declared in `pyproject.toml` after installing the package:
+Или через console entrypoint, объявленный в `pyproject.toml`, после установки пакета:
 
 ```bash
 mcp-server
 ```
 
-For editable installs, use a virtual environment and run:
+Для editable install используйте virtual environment и выполните:
 
 ```bash
 python3 -m pip install -e .
 ```
 
-The process stays attached to `stdin/stdout` and waits for MCP messages.
+Процесс остается подключенным к `stdin/stdout` и ждет MCP messages.
 
 ## MCP Protocol
 
-The server supports:
+Сервер поддерживает:
 
 - `initialize`
 - `tools/list`
 - `tools/call`
 
-Transport is `stdio` with newline-delimited JSON-RPC messages.
+Transport: `stdio` with newline-delimited JSON-RPC messages.
 
-Successful tool responses include:
+Успешные tool responses включают:
 
 - `content`
 - `structuredContent`
 - `isError: false`
 
-Failures are returned as JSON-RPC errors with normalized error codes in `error.data.code`.
+Ошибки возвращаются как JSON-RPC errors с normalized error codes в `error.data.code`.
 
-## Examples
+## Примеры
 
 ### Initialize
 
@@ -154,7 +154,7 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 
 ### List Test Suites
 
-`list_test_suites` requires `testPlanId`, not `projectId`.
+`list_test_suites` требует `testPlanId`, а не `projectId`.
 
 ```json
 {

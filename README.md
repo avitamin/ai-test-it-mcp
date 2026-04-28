@@ -1,5 +1,7 @@
 # mcp-server
 
+[English](README.md) | [Русский](README.ru.md)
+
 MCP server for the Test IT REST API.
 
 The server uses `stdio` JSON-RPC and exposes task-oriented MCP tools for working with projects, test plans, test suites, test cases, test runs, and test results.
@@ -52,6 +54,7 @@ The process stays attached to `stdin/stdout` and waits for MCP messages.
 ## Documentation
 
 - [Documentation index](docs/README.md)
+- [Russian documentation index](docs/README.ru.md)
 - [Usage and configuration](docs/usage.md)
 - [MCP tool catalog](docs/mcp-tools.md)
 - [Development notes](docs/development.md)

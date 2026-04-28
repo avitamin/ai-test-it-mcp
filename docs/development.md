@@ -1,5 +1,7 @@
 # Development Notes
 
+[English](development.md) | [Русский](development.ru.md)
+
 ## Project Layout
 
 - `main.py`: minimal local entrypoint

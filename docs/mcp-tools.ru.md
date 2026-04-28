@@ -1,17 +1,17 @@
-# MCP Tool Catalog
+# Каталог MCP Tools
 
 [English](mcp-tools.md) | [Русский](mcp-tools.ru.md)
 
-The MCP tool registry is defined in `mcp_server/server.py`. Tool-level validation and request shaping are implemented in `mcp_server/services.py`.
+Реестр MCP tools определен в `mcp_server/server.py`. Tool-level validation и request shaping реализованы в `mcp_server/services.py`.
 
-## Pagination And Responses
+## Pagination и responses
 
-Paginated tools use:
+Paginated tools используют:
 
 - `page`, default `1`
 - `pageSize`, default `20`, allowed range `1..100`
 
-The server normalizes upstream list responses into:
+Сервер нормализует upstream list responses в:
 
 ```json
 {
@@ -23,7 +23,7 @@ The server normalizes upstream list responses into:
 }
 ```
 
-For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and represent the normalized MCP response, not native Test IT pagination.
+Для non-paginated upstream endpoints `page` и `pageSize` являются synthetic и описывают normalized MCP response, а не native Test IT pagination.
 
 ## Projects
 
@@ -37,7 +37,7 @@ For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and re
 - `create_test_suite`: required `projectId`, `name`; additional Test IT fields are passed through
 - `update_test_suite`: required `testSuiteId`; additional Test IT fields are passed through
 
-`list_test_suites` is test-plan scoped and cannot work with only `projectId`.
+`list_test_suites` scoped по тест-плану и не может работать только с `projectId`.
 
 ## Test Plans
 
@@ -54,7 +54,7 @@ For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and re
 - `update_test_case`: required `testCaseId`; additional Test IT fields are passed through
 - `delete_test_case`: required `testCaseId`
 
-Test cases use Test IT work item endpoints upstream.
+Test cases используют upstream Test IT work item endpoints.
 
 ## Test Runs
 
@@ -64,7 +64,7 @@ Test cases use Test IT work item endpoints upstream.
 - `update_test_run`: required `testRunId`; additional Test IT fields are passed through
 - `complete_test_run`: required `testRunId`
 
-If state flags are omitted, `list_test_runs` sends all four state flags as true.
+Если state flags не переданы, `list_test_runs` отправляет все четыре state flags как true.
 
 ## Test Results
 
@@ -73,18 +73,18 @@ If state flags are omitted, `list_test_runs` sends all four state flags as true.
 - `create_test_result`: required `projectId`; additional Test IT fields are passed through
 - `update_test_result`: required `testResultId`; additional Test IT fields are passed through
 
-`list_test_results` uses `POST /api/v2/testResults/search`. The service sends `projectIds` and maps `testCaseId` to upstream `workItemIds`.
+`list_test_results` использует `POST /api/v2/testResults/search`. Сервис отправляет `projectIds` и мапит `testCaseId` в upstream `workItemIds`.
 
 ## Links
 
 - `link_test_cases_to_suite_or_plan`: required `parentType`, `parentId`, `testCaseIds`
 - `unlink_test_cases_from_suite_or_plan`: required `parentType`, `parentId`, `testCaseIds`
 
-`parentType` must be either `test_suite` or `test_plan`.
+`parentType` должен быть либо `test_suite`, либо `test_plan`.
 
 ## Error Model
 
-The server maps upstream and local failures to:
+Сервер мапит upstream и local failures в:
 
 - `ConfigurationError`
 - `AuthenticationError`
@@ -94,4 +94,4 @@ The server maps upstream and local failures to:
 - `RateLimitError`
 - `UpstreamError`
 
-Each error includes a short message and may include details such as operation, entity, field, and HTTP status.
+Каждая ошибка содержит short message и может включать details, такие как operation, entity, field и HTTP status.

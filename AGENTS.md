@@ -33,6 +33,12 @@ Name modules with `snake_case.py`, classes with `PascalCase`, functions and vari
 
 Tests use the standard library `unittest`, not pytest. Place tests in `tests/test_*.py`, group them in `unittest.TestCase` classes, and name methods `test_<behavior>`. Use small fake clients or mocks to keep tests offline. Add or update tests when changing protocol behavior, request shaping, validation, configuration parsing, or error mapping.
 
+## Documentation Language Policy
+
+English documentation is the canonical source for repository work and AI agents. Agents should read English docs by default. If an agent has already read an English document for a task, it should not read the Russian `.ru.md` counterpart for the same task.
+
+Russian `.ru.md` files are translation counterparts for Russian-speaking readers. A reader should use either the English document or the Russian counterpart for normal usage, not both. Read both only when maintaining translations, validating EN/RU synchronization, or investigating a suspected mismatch. If English and Russian docs conflict, follow English and fix or flag the Russian drift.
+
 ## Commit & Pull Request Guidelines
 
 Recent history uses concise imperative commits, for example `Rename package to mcp_server` and `Add initial working Test IT MCP server`. Keep subjects short and focused on one change.
