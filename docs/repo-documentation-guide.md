@@ -65,6 +65,19 @@ If sources disagree, prefer the higher-priority source and call out the unresolv
 
 For EN/RU mismatches, English docs win. Fix the Russian counterpart when the task includes documentation edits, or flag the drift if fixing it is out of scope.
 
+## Post-Feature Documentation Check
+
+After every feature or behavior change, perform an impact-based documentation check before handoff. Update documentation only when the implemented change affects documented behavior, public interfaces, setup, validation, errors, tests, smoke checks, or maintainer workflow. If no documentation changes are needed, record that decision in the final response with the sources checked.
+
+Use this ownership map for common feature impacts:
+
+- MCP tool names, descriptions, input schemas, arguments, response shape, pagination, or error model: update `docs/mcp-tools.md` and `docs/mcp-tools.ru.md`.
+- Setup, environment variables, run commands, protocol examples, or user-facing runtime behavior: update `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md` as applicable.
+- Maintainer workflow, tests, limitations, API-shape notes, or upstream smoke-check guidance: update `docs/development.md`, `docs/development.ru.md`, `http_client/README.md`, and `http_client/README.ru.md` as applicable.
+- Agent workflow, documentation ownership, validation rules, or handoff expectations: update `AGENTS.md`, `docs/codex-workflow.md`, or this guide.
+
+When a changed owner document has a Russian counterpart, update both language versions unless the task is explicitly limited to internal-only documentation without a counterpart. English remains canonical if counterparts disagree.
+
 ## Indexing Policy
 
 Prefer updating the existing owner document for a topic. Create a new document only when no current document owns the topic or when the content would make the owner document hard to use.
@@ -100,4 +113,5 @@ A documentation task is complete when:
 3. New or changed links point to existing paths.
 4. Markdown has been read back for obvious formatting issues.
 5. Tests or commands are run only when they are relevant to the documentation change; for docs-only edits, readback is sufficient unless the user asks for more validation.
-6. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.
+6. For feature or behavior changes, documentation impact has been updated or explicitly marked as not applicable with checked sources.
+7. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.

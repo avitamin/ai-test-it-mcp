@@ -52,9 +52,11 @@ Use this strict sequence for new features and behavior changes. Bug fixes, docum
 1. Build the specification through dialogue until the goal, scope, constraints, API impact, and success criteria are explicit.
 2. Propose implementation options with tradeoffs, then recommend one option.
 3. Write the implementation plan before editing code.
-4. Write the test plan, including unit tests, protocol or service behavior, documentation validation, and HTTP smoke checks when upstream Test IT assumptions change.
+4. Write the test plan, including unit tests, protocol or service behavior, documentation impact, and HTTP smoke checks when upstream Test IT assumptions change.
 5. Add or update automated acceptance tests in `tests/test_*.py` with `unittest`; when practical, they should fail before the implementation.
-6. Implement code only after the specification, selected approach, implementation plan, test plan, and acceptance tests are settled.
+6. Implement code only after the specification, selected approach, implementation plan, test plan, documentation impact expectation, and acceptance tests are settled.
+
+After implementation, perform an impact-based documentation check before handoff. Update the owner documents named in [Repo documentation guide](repo-documentation-guide.md) when the feature changes public MCP tools, setup or configuration, runtime behavior, validation rules, error behavior, tests, smoke checks, or maintainer workflow. If no documentation changes are needed, include that decision and the checked sources in the final response.
 
 Acceptance tests should describe externally visible behavior, not implementation details. For service behavior, use small fake clients like the existing service tests. For MCP surface or protocol behavior, update the nearest server or protocol tests. For configuration, error mapping, or request shaping, update the closest existing `tests/test_*.py` file.
 
@@ -80,6 +82,8 @@ Run the full offline unit test suite after code changes:
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+After feature or behavior changes, verify documentation impact using [Repo documentation guide](repo-documentation-guide.md). When documentation is touched, read back the edited Markdown and verify that new or changed links point to existing files.
 
 For documentation-only changes, read back the edited Markdown and verify that new links point to existing files. Unit tests are optional unless the documentation change also modifies behavior, examples that are tested, or request shaping.
 
@@ -107,6 +111,7 @@ Pull requests should include:
 - summary of the change
 - reason for the change
 - validation result, usually `python3 -m unittest discover -s tests -v`
+- documentation impact, including updated docs or why no docs changed
 - configuration or API-contract impact, if any
 
 For documentation-only work, include the Markdown readback and link verification instead of unit test output unless tests were relevant.
