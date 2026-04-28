@@ -73,6 +73,7 @@ If you change API routing assumptions, validate them against the live Swagger fi
 
 ## Repository Guides
 
+- [Local Codex workflow](codex-workflow.md)
 - [Repo commit guide](repo-commit-guide.md)
 - [Repo documentation guide](repo-documentation-guide.md)
 - [Repository guidelines](../AGENTS.md)
