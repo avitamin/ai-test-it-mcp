@@ -33,6 +33,10 @@ Name modules with `snake_case.py`, classes with `PascalCase`, functions and vari
 
 Tests use the standard library `unittest`, not pytest. Place tests in `tests/test_*.py`, group them in `unittest.TestCase` classes, and name methods `test_<behavior>`. Use small fake clients or mocks to keep tests offline. Add or update tests when changing protocol behavior, request shaping, validation, configuration parsing, or error mapping.
 
+## AI Agent Tooling Priority
+
+AI agents should prefer JetBrains MCP tools for IDE-aware repository work, including project navigation, file reads, code search, inspections, builds, run configurations, and refactorings. Use shell tools only when JetBrains MCP cannot perform the task directly or when a plain terminal command is the correct interface.
+
 ## Documentation Language Policy
 
 English documentation is the canonical source for repository work and AI agents. Agents should read English docs by default. If an agent has already read an English document for a task, it should not read the Russian `.ru.md` counterpart for the same task.

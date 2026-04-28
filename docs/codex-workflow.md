@@ -39,6 +39,7 @@ Done when:
 Useful repository-specific constraints:
 
 - Keep the MCP tool surface stable unless the task explicitly changes it.
+- Prefer JetBrains MCP tools for IDE-aware repository work.
 - Keep tests offline with `unittest` fakes or mocks.
 - Use English docs as canonical for agent and maintainer work.
 - Do not commit real Test IT tokens, private endpoints, project IDs, or UUIDs.
@@ -58,6 +59,8 @@ Use this strict sequence for new features and behavior changes. Bug fixes, docum
 Acceptance tests should describe externally visible behavior, not implementation details. For service behavior, use small fake clients like the existing service tests. For MCP surface or protocol behavior, update the nearest server or protocol tests. For configuration, error mapping, or request shaping, update the closest existing `tests/test_*.py` file.
 
 ## Local Workflow
+
+Use JetBrains MCP as the default interface for IDE-aware work in this repository. Prefer JetBrains tools for project navigation, targeted file reads, indexed code or symbol search, file inspections, project builds, run configurations, and IDE-aware refactorings. Use shell tools as a fallback when JetBrains MCP cannot perform the task directly, or when a terminal command is the right interface for the work.
 
 Keep edits close to the owning modules:
 
