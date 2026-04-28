@@ -2,7 +2,7 @@
 
 ## Source Priority
 
-Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `README.ru.md`, `pyproject.toml`, `docs/README.md`, `docs/README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, `docs/development.md`, `docs/development.ru.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, `http_client/README.ru.md`, and the current project source tree.
+Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `README.ru.md`, `pyproject.toml`, `.codex/config.example.toml`, `docs/README.md`, `docs/README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, `docs/development.md`, `docs/development.ru.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, `http_client/README.ru.md`, and the current project source tree.
 
 AI agents must use English documentation as the canonical source. For normal repository work, read one language path per topic: English by default for agents, or Russian for Russian-speaking human readers. Do not read both language counterparts unless the task is translation maintenance, EN/RU synchronization, link validation, or investigation of a suspected mismatch.
 
@@ -31,6 +31,8 @@ Conservative default: document current repository behavior only. Do not describe
 - `docs/development.ru.md`: Russian counterpart to `docs/development.md`.
 - `http_client/README.md`: canonical English JetBrains HTTP Client smoke-check instructions and upstream Test IT API assumptions.
 - `http_client/README.ru.md`: Russian counterpart to `http_client/README.md`.
+- `docs/codex-workflow.md`: Codex-first local task workflow, context loading, MCP selection, validation, and PR handoff guidance.
+- `docs/codex-mcp-setup.md`: local Codex MCP configuration guide for JetBrains, this Test IT server, GitHub, and OpenAI docs.
 - `docs/repo-commit-guide.md`: local commit message, staging, branch, and validation workflow.
 - `docs/repo-documentation-guide.md`: local documentation workflow, ownership, source priority, verification matrix, and indexing policy.
 - `AGENTS.md`: contributor-facing repository guidelines for structure, style, tests, commits, and security.
@@ -44,6 +46,8 @@ Each document must have one primary responsibility. Use this guide to keep docs 
 - `docs/mcp-tools.md`: public MCP tool reference, required arguments, pagination, response shape, and error model.
 - `docs/development.md`: maintainer workflow, tests, API-shape assumptions, limitations, and validation guidance.
 - `http_client/README.md`: JetBrains HTTP Client smoke-check procedure and local environment setup.
+- `docs/codex-workflow.md`: Codex-first task flow, context loading, MCP selection, validation, and PR handoff.
+- `docs/codex-mcp-setup.md`: Codex MCP configuration, endpoint choices, local placeholders, and setup security.
 - `docs/repo-commit-guide.md`: commit, branch, staging, and validation workflow.
 - `docs/repo-documentation-guide.md`: documentation policy, ownership, verification, indexing, and AI context hygiene.
 
@@ -89,6 +93,7 @@ Before changing documentation, verify facts against the relevant sources:
 - Test IT REST API assumptions: check `mcp_server/testit_client.py`, `http_client/testit-smoke.http`, `http_client/README.md`, `http_client/README.ru.md`, `docs/development.md`, and `docs/development.ru.md`.
 - Error behavior: check `mcp_server/errors.py`, `mcp_server/mcp_protocol.py`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, and `tests/test_errors.py`.
 - Test instructions and coverage claims: check `AGENTS.md`, `README.md`, `README.ru.md`, `docs/development.md`, `docs/development.ru.md`, `pyproject.toml`, and `tests/`.
+- Agent workflow or MCP setup docs: check `AGENTS.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, and the relevant MCP owner docs.
 - Commit or branch workflow docs: check `docs/repo-commit-guide.md`, `AGENTS.md`, current git state, and recent history when available.
 
 If sources disagree, prefer the higher-priority source and call out the unresolved discrepancy in the final response or in the edited document when it affects readers.
@@ -104,7 +109,7 @@ Use this ownership map for common feature impacts:
 - MCP tool names, descriptions, input schemas, arguments, response shape, pagination, or error model: update `docs/mcp-tools.md` and `docs/mcp-tools.ru.md`.
 - Setup, environment variables, run commands, protocol examples, or user-facing runtime behavior: update `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md` as applicable.
 - Maintainer workflow, tests, limitations, API-shape notes, or upstream smoke-check guidance: update `docs/development.md`, `docs/development.ru.md`, `http_client/README.md`, and `http_client/README.ru.md` as applicable.
-- Agent workflow, documentation ownership, validation rules, or handoff expectations: update `AGENTS.md`, `docs/codex-workflow.md`, or this guide.
+- Agent workflow, MCP setup, documentation ownership, validation rules, or handoff expectations: update `AGENTS.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, or this guide as applicable.
 
 When a changed owner document has a Russian counterpart, update both language versions unless the task is explicitly limited to internal-only documentation without a counterpart. English remains canonical if counterparts disagree.
 

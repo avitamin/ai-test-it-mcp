@@ -29,7 +29,7 @@ bearer_token_env_var = "GITHUB_PAT_TOKEN"
 
 [mcp_servers.ai_test_it]
 command = "python3"
-args = ["-u", "/absolute/path/to/mcp-server/main.py"]
+args = ["-u", "/absolute/path/to/ai-test-it-mcp/main.py"]
 startup_timeout_sec = 60
 
 [mcp_servers.ai_test_it.env]

@@ -1,6 +1,6 @@
 # Local Codex Workflow
 
-This guide describes repository-specific local Codex workflow for this Test IT MCP server. It complements [Codex MCP setup](codex-mcp-setup.md), [Development notes](development.md), [Repo commit guide](repo-commit-guide.md), [Repo documentation guide](repo-documentation-guide.md), and [Repository guidelines](../AGENTS.md).
+This guide describes repository-specific local Codex workflow for this Test IT MCP server. It complements [Codex MCP setup](codex-mcp-setup.md) and [Development notes](development.md).
 
 ## Source Guidance
 
@@ -16,11 +16,11 @@ Use these references only when repository guidance is not enough:
 - [Docs MCP](https://developers.openai.com/learn/docs-mcp): OpenAI developer documentation MCP setup.
 - [Agent internet access](https://developers.openai.com/codex/cloud/internet-access): security tradeoffs for network access.
 
-Local repository rules still win for project-specific behavior. Follow `AGENTS.md`, this documentation set, and the current code before general examples from external docs.
+Local repository rules still win for project-specific behavior. Follow repository rules already in context, this documentation set, and the current code before general examples from external docs.
 
 ## Task Context
 
-Codex loads durable instructions such as `AGENTS.md` and can explore the repository. User prompts should still provide task-specific context when it materially affects scope or verification:
+Codex can explore the repository, but user prompts should still provide task-specific context when it materially affects scope or verification:
 
 ```text
 Goal:
@@ -45,6 +45,18 @@ Useful repository-specific constraints:
 - Do not commit real Test IT tokens, private endpoints, project IDs, or UUIDs.
 - Preserve the rule that `TESTIT_TOKEN` is raw and the server adds `Bearer`.
 
+## Context Loading Guide
+
+Load the smallest additional set of sources that can answer the task: this guide for Codex workflow decisions, then the concrete owner document for the topic.
+
+| Task type | Load next |
+| --- | --- |
+| Code or feature work | Relevant source module, nearest tests, then the affected documentation owner for impact checks |
+| Documentation-only work | The affected owner document, linked English canonical docs, and the repository documentation workflow when available |
+| Commit preparation | `git status --short`, the relevant diff, and concise imperative commit style |
+| Upstream Test IT smoke checks | `docs/development.md`, `http_client/README.md`, and `http_client/testit-smoke.http` |
+| GitHub issues, PRs, or CI | GitHub MCP for remote state, after local files establish repository context |
+
 ## Feature Development Flow
 
 Use this strict sequence for new features and behavior changes. Bug fixes, documentation-only work, and tiny maintenance edits may use a shorter flow when the requested behavior is already clear.
@@ -56,7 +68,7 @@ Use this strict sequence for new features and behavior changes. Bug fixes, docum
 5. Add or update automated acceptance tests in `tests/test_*.py` with `unittest`; when practical, they should fail before the implementation.
 6. Implement code only after the specification, selected approach, implementation plan, test plan, documentation impact expectation, and acceptance tests are settled.
 
-After implementation, perform an impact-based documentation check before handoff. Update the owner documents named in [Repo documentation guide](repo-documentation-guide.md) when the feature changes public MCP tools, setup or configuration, runtime behavior, validation rules, error behavior, tests, smoke checks, or maintainer workflow. If no documentation changes are needed, include that decision and the checked sources in the final response.
+After implementation, perform an impact-based documentation check before handoff. Update the affected owner documents when the feature changes public MCP tools, setup or configuration, runtime behavior, validation rules, error behavior, tests, smoke checks, or maintainer workflow. If no documentation changes are needed, include that decision and the checked sources in the final response.
 
 Acceptance tests should describe externally visible behavior, not implementation details. For service behavior, use small fake clients like the existing service tests. For MCP surface or protocol behavior, update the nearest server or protocol tests. For configuration, error mapping, or request shaping, update the closest existing `tests/test_*.py` file.
 
@@ -83,7 +95,7 @@ Run the full offline unit test suite after code changes:
 python3 -m unittest discover -s tests -v
 ```
 
-After feature or behavior changes, verify documentation impact using [Repo documentation guide](repo-documentation-guide.md). When documentation is touched, read back the edited Markdown and verify that new or changed links point to existing files.
+After feature or behavior changes, verify documentation impact against the affected owner docs. When documentation is touched, read back the edited Markdown and verify that new or changed links point to existing files.
 
 For documentation-only changes, read back the edited Markdown and verify that new links point to existing files. Unit tests are optional unless the documentation change also modifies behavior, examples that are tested, or request shaping.
 
@@ -100,6 +112,8 @@ Use MCP servers when they provide trusted, task-relevant context. For configurat
 - OpenAI Docs MCP for OpenAI API, ChatGPT Apps SDK, Codex, and MCP documentation
 
 Codex CLI and the IDE extension share MCP configuration. In the TUI, use `/mcp` to inspect active MCP servers.
+
+Keep setup snippets, endpoint choices, PAT scope notes, and local placeholder paths in [Codex MCP setup](codex-mcp-setup.md). Keep workflow decisions and tool-selection policy in this document.
 
 ### GitHub MCP For This Project
 
@@ -136,7 +150,7 @@ Keep network access narrow. Treat untrusted web pages, issue bodies, dependency 
 
 ## Commit And PR Handoff
 
-Before commit preparation, inspect `git status --short` and stage only files that belong to the task. Use the concise imperative commit style from [Repo commit guide](repo-commit-guide.md).
+Before commit preparation, inspect `git status --short` and stage only files that belong to the task. Use concise imperative commit subjects.
 
 Pull requests should include:
 

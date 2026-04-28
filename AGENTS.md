@@ -37,6 +37,14 @@ Tests use the standard library `unittest`, not pytest. Place tests in `tests/tes
 
 AI agents should prefer JetBrains MCP tools for IDE-aware repository work, including project navigation, file reads, code search, inspections, builds, run configurations, and refactorings. Use shell tools only when JetBrains MCP cannot perform the task directly or when a plain terminal command is the correct interface.
 
+For Codex-specific workflow, MCP selection, validation, and PR handoff guidance, use `docs/codex-workflow.md`. For local MCP server configuration, use `docs/codex-mcp-setup.md`.
+
+Additional context for AI agents:
+
+- Use `docs/codex-workflow.md` for Codex task flow, validation, and MCP usage decisions.
+- Use the concrete owner document for the topic, such as `docs/usage.md`, `docs/mcp-tools.md`, `docs/development.md`, or `http_client/README.md`.
+- Load code, tests, and English canonical docs needed for the specific task.
+
 ## Documentation Language Policy
 
 English documentation is the canonical source for repository work and AI agents. Agents should read English docs by default. If an agent has already read an English document for a task, it should not read the Russian `.ru.md` counterpart for the same task.
@@ -47,7 +55,7 @@ Russian `.ru.md` files are translation counterparts for Russian-speaking readers
 
 After implementing a feature or behavior change, AI agents must perform an impact-based documentation check before handoff. Update documentation when the change affects public MCP tools, setup or configuration, runtime behavior, validation rules, error behavior, tests, smoke checks, or maintainer workflow.
 
-Use the owner documents from `docs/repo-documentation-guide.md`. Update canonical English docs first, and update Russian `.ru.md` counterparts when the changed document has one. If no documentation changes are needed, state that explicitly in the final response with the sources checked.
+Use the concrete owner document for the affected behavior: `docs/mcp-tools.md` for public MCP tools and error behavior, `docs/usage.md` for setup and runtime behavior, `docs/development.md` for tests or maintainer workflow, and `http_client/README.md` for smoke checks. Update canonical English docs first, and update Russian `.ru.md` counterparts when the changed document has one. If no documentation changes are needed, state that explicitly in the final response with the sources checked.
 
 ## Commit & Pull Request Guidelines
 

@@ -27,7 +27,7 @@ Use these servers for this project:
 | `github` | Remote GitHub issues, pull requests, repository metadata, users, and workflow context | GitHub remote MCP server and `GITHUB_PAT_TOKEN` |
 | `openaiDeveloperDocs` | Official OpenAI API, Codex, and MCP documentation lookup | OpenAI hosted docs MCP server |
 
-Keep `.codex/config.example.toml` small and runnable as a template. Put workflow policy and tool-selection rules in [Local Codex workflow](codex-workflow.md), not in the config file.
+Keep `.codex/config.example.toml` small and runnable as a template. Put workflow policy and tool-selection rules in [Local Codex workflow](codex-workflow.md), not in this setup guide or the config file.
 
 ## JetBrains MCP
 
@@ -46,7 +46,7 @@ args = [
 IJ_MCP_SERVER_PORT = "64342"
 ```
 
-Use JetBrains MCP when Codex needs IDE-aware repository context. Keep the server local; do not put machine-specific paths into tracked documentation except as placeholders.
+The tracked template includes a fuller classpath placeholder for current JetBrains MCP dependencies. Use JetBrains MCP when Codex needs IDE-aware repository context. Keep the server local; do not put machine-specific paths into tracked documentation except as placeholders.
 
 ## Test IT MCP
 

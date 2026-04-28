@@ -13,7 +13,3 @@
 ## Сопровождение проекта
 
 - [Заметки по разработке](development.ru.md): структура проекта, tests, API-shape assumptions, limitations и validation guidance.
-- [Repo commit guide](repo-commit-guide.md): local commit, branch, staging и validation workflow.
-- [Repo documentation guide](repo-documentation-guide.md): documentation ownership, source priority, verification matrix и indexing policy.
-
-Repository-level contributor rules также находятся в [AGENTS.md](../AGENTS.md).
