@@ -33,11 +33,29 @@ Name modules with `snake_case.py`, classes with `PascalCase`, functions and vari
 
 Tests use the standard library `unittest`, not pytest. Place tests in `tests/test_*.py`, group them in `unittest.TestCase` classes, and name methods `test_<behavior>`. Use small fake clients or mocks to keep tests offline. Add or update tests when changing protocol behavior, request shaping, validation, configuration parsing, or error mapping.
 
+## AI Agent Tooling Priority
+
+AI agents should prefer JetBrains MCP tools for IDE-aware repository work, including project navigation, file reads, code search, inspections, builds, run configurations, and refactorings. Use shell tools only when JetBrains MCP cannot perform the task directly or when a plain terminal command is the correct interface.
+
+For Codex-specific workflow, MCP selection, validation, and PR handoff guidance, use `docs/codex-workflow.md`. For local MCP server configuration, use `docs/codex-mcp-setup.md`.
+
+Additional context for AI agents:
+
+- Use `docs/codex-workflow.md` for Codex task flow, validation, and MCP usage decisions.
+- Use the concrete owner document for the topic, such as `docs/usage.md`, `docs/mcp-tools.md`, `docs/development.md`, or `http_client/README.md`.
+- Load code, tests, and English canonical docs needed for the specific task.
+
 ## Documentation Language Policy
 
 English documentation is the canonical source for repository work and AI agents. Agents should read English docs by default. If an agent has already read an English document for a task, it should not read the Russian `.ru.md` counterpart for the same task.
 
 Russian `.ru.md` files are translation counterparts for Russian-speaking readers. A reader should use either the English document or the Russian counterpart for normal usage, not both. Read both only when maintaining translations, validating EN/RU synchronization, or investigating a suspected mismatch. If English and Russian docs conflict, follow English and fix or flag the Russian drift.
+
+## Documentation After Feature Changes
+
+After implementing a feature or behavior change, AI agents must perform an impact-based documentation check before handoff. Update documentation when the change affects public MCP tools, setup or configuration, runtime behavior, validation rules, error behavior, tests, smoke checks, or maintainer workflow.
+
+Use the concrete owner document for the affected behavior: `docs/mcp-tools.md` for public MCP tools and error behavior, `docs/usage.md` for setup and runtime behavior, `docs/development.md` for tests or maintainer workflow, and `http_client/README.md` for smoke checks. Update canonical English docs first, and update Russian `.ru.md` counterparts when the changed document has one. If no documentation changes are needed, state that explicitly in the final response with the sources checked.
 
 ## Commit & Pull Request Guidelines
 

@@ -17,8 +17,5 @@ This directory contains user and maintainer documentation for the Test IT MCP se
 
 - [Development notes](development.md): project layout, tests, API-shape assumptions, limitations, and validation guidance.
 - [Development notes, Russian](development.ru.md): Russian version of the maintainer notes.
-- [Local Codex workflow](codex-workflow.md): repo-specific local Codex workflow, validation, MCP, and PR handoff.
-- [Repo commit guide](repo-commit-guide.md): local commit, branch, staging, and validation workflow.
-- [Repo documentation guide](repo-documentation-guide.md): documentation ownership, source priority, verification matrix, and indexing policy.
-
-Repository-level contributor rules also live in [AGENTS.md](../AGENTS.md).
+- [Codex MCP setup](codex-mcp-setup.md): local Codex MCP server configuration, endpoint choices, placeholders, and setup security.
+- [Local Codex workflow](codex-workflow.md): Codex-first task flow, context loading, MCP selection, validation, and PR handoff.

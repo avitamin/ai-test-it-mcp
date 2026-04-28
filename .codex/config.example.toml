@@ -1,4 +1,6 @@
 # Copy this file to `.codex/config.toml` and replace placeholders with local paths.
+# `.codex/config.toml` is ignored by git; keep real tokens out of tracked files.
+# Export GITHUB_PAT_TOKEN in your shell before starting Codex when using GitHub MCP.
 
 [mcp_servers.jetbrains]
 command = "/path/to/jetbrains/jbr/bin/java"
@@ -11,9 +13,23 @@ args = [
 [mcp_servers.jetbrains.env]
 IJ_MCP_SERVER_PORT = "64342"
 
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "GITHUB_PAT_TOKEN"
+
+# Read-only alternative for planning, review, and CI inspection:
+# [mcp_servers.github]
+# url = "https://api.githubcopilot.com/mcp/readonly"
+# bearer_token_env_var = "GITHUB_PAT_TOKEN"
+
+# Actions-only read-only alternative if you want a separate CI-focused server:
+# [mcp_servers.github_actions]
+# url = "https://api.githubcopilot.com/mcp/x/actions/readonly"
+# bearer_token_env_var = "GITHUB_PAT_TOKEN"
+
 [mcp_servers.ai_test_it]
 command = "python3"
-args = ["-u", "/absolute/path/to/mcp-server/main.py"]
+args = ["-u", "/absolute/path/to/ai-test-it-mcp/main.py"]
 startup_timeout_sec = 60
 
 [mcp_servers.ai_test_it.env]

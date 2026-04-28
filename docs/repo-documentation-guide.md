@@ -2,7 +2,7 @@
 
 ## Source Priority
 
-Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `README.ru.md`, `pyproject.toml`, `docs/README.md`, `docs/README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, `docs/development.md`, `docs/development.ru.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, `http_client/README.ru.md`, and the current project source tree.
+Fact: This guide is generated from repository facts in `AGENTS.md`, `README.md`, `README.ru.md`, `pyproject.toml`, `.codex/config.example.toml`, `docs/README.md`, `docs/README.ru.md`, `docs/usage.md`, `docs/usage.ru.md`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, `docs/development.md`, `docs/development.ru.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `docs/repo-commit-guide.md`, `http_client/README.md`, `http_client/README.ru.md`, and the current project source tree.
 
 AI agents must use English documentation as the canonical source. For normal repository work, read one language path per topic: English by default for agents, or Russian for Russian-speaking human readers. Do not read both language counterparts unless the task is translation maintenance, EN/RU synchronization, link validation, or investigation of a suspected mismatch.
 
@@ -31,9 +31,43 @@ Conservative default: document current repository behavior only. Do not describe
 - `docs/development.ru.md`: Russian counterpart to `docs/development.md`.
 - `http_client/README.md`: canonical English JetBrains HTTP Client smoke-check instructions and upstream Test IT API assumptions.
 - `http_client/README.ru.md`: Russian counterpart to `http_client/README.md`.
+- `docs/codex-workflow.md`: Codex-first local task workflow, context loading, MCP selection, validation, and PR handoff guidance.
+- `docs/codex-mcp-setup.md`: local Codex MCP configuration guide for JetBrains, this Test IT server, GitHub, and OpenAI docs.
 - `docs/repo-commit-guide.md`: local commit message, staging, branch, and validation workflow.
 - `docs/repo-documentation-guide.md`: local documentation workflow, ownership, source priority, verification matrix, and indexing policy.
 - `AGENTS.md`: contributor-facing repository guidelines for structure, style, tests, commits, and security.
+
+## Documentation Responsibility Model
+
+Each document must have one primary responsibility. Use this guide to keep docs focused, discoverable, and cheap for AI agents to load into context.
+
+- `README.md`: project overview, quick start, top-level navigation, project layout, and test command.
+- `docs/usage.md`: setup, configuration, run commands, MCP protocol basics, and runnable JSON-RPC examples.
+- `docs/mcp-tools.md`: public MCP tool reference, required arguments, pagination, response shape, and error model.
+- `docs/development.md`: maintainer workflow, tests, API-shape assumptions, limitations, and validation guidance.
+- `http_client/README.md`: JetBrains HTTP Client smoke-check procedure and local environment setup.
+- `docs/codex-workflow.md`: Codex-first task flow, context loading, MCP selection, validation, and PR handoff.
+- `docs/codex-mcp-setup.md`: Codex MCP configuration, endpoint choices, local placeholders, and setup security.
+- `docs/repo-commit-guide.md`: commit, branch, staging, and validation workflow.
+- `docs/repo-documentation-guide.md`: documentation policy, ownership, verification, indexing, and AI context hygiene.
+
+Do not mix unrelated document types unless one is clearly subordinate to the primary responsibility. If a section grows into a second responsibility, move the detail to the owner document and leave a short link from the original location.
+
+Use these mental models as operational checks, not as extra theory to document:
+
+- Diataxis: choose whether the content is tutorial, how-to, reference, or explanation before editing.
+- Pareto: optimize for the small set of facts needed in most tasks, such as commands, environment variables, tool names, response shapes, ownership, validation rules, and known limitations.
+- Occam: prefer the smallest structure that lets the reader complete the task correctly. Do not create a new document, table, checklist, taxonomy, or abstraction unless it removes real ambiguity.
+
+## AI Context Hygiene
+
+Agent-facing documentation should be dense, canonical, and low-noise.
+
+- Put discovery maps in indexes, facts in owner documents, and process rules in repo guides.
+- Prefer links to stable owner documents instead of copying full commands, schemas, examples, or explanations across files.
+- Keep rare edge cases, historical context, and verbose rationale below common workflows or in maintainer-facing docs.
+- Avoid speculative architecture, broad principles, or "nice to know" commentary unless the information changes an implementation or maintenance decision.
+- For AI work, load English canonical docs by default and avoid loading Russian counterparts unless the task is translation sync, link validation, or mismatch investigation.
 
 ## Document Ownership
 
@@ -59,11 +93,25 @@ Before changing documentation, verify facts against the relevant sources:
 - Test IT REST API assumptions: check `mcp_server/testit_client.py`, `http_client/testit-smoke.http`, `http_client/README.md`, `http_client/README.ru.md`, `docs/development.md`, and `docs/development.ru.md`.
 - Error behavior: check `mcp_server/errors.py`, `mcp_server/mcp_protocol.py`, `docs/mcp-tools.md`, `docs/mcp-tools.ru.md`, and `tests/test_errors.py`.
 - Test instructions and coverage claims: check `AGENTS.md`, `README.md`, `README.ru.md`, `docs/development.md`, `docs/development.ru.md`, `pyproject.toml`, and `tests/`.
+- Agent workflow or MCP setup docs: check `AGENTS.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, and the relevant MCP owner docs.
 - Commit or branch workflow docs: check `docs/repo-commit-guide.md`, `AGENTS.md`, current git state, and recent history when available.
 
 If sources disagree, prefer the higher-priority source and call out the unresolved discrepancy in the final response or in the edited document when it affects readers.
 
 For EN/RU mismatches, English docs win. Fix the Russian counterpart when the task includes documentation edits, or flag the drift if fixing it is out of scope.
+
+## Post-Feature Documentation Check
+
+After every feature or behavior change, perform an impact-based documentation check before handoff. Update documentation only when the implemented change affects documented behavior, public interfaces, setup, validation, errors, tests, smoke checks, or maintainer workflow. If no documentation changes are needed, record that decision in the final response with the sources checked.
+
+Use this ownership map for common feature impacts:
+
+- MCP tool names, descriptions, input schemas, arguments, response shape, pagination, or error model: update `docs/mcp-tools.md` and `docs/mcp-tools.ru.md`.
+- Setup, environment variables, run commands, protocol examples, or user-facing runtime behavior: update `README.md`, `README.ru.md`, `docs/usage.md`, and `docs/usage.ru.md` as applicable.
+- Maintainer workflow, tests, limitations, API-shape notes, or upstream smoke-check guidance: update `docs/development.md`, `docs/development.ru.md`, `http_client/README.md`, and `http_client/README.ru.md` as applicable.
+- Agent workflow, MCP setup, documentation ownership, validation rules, or handoff expectations: update `AGENTS.md`, `docs/codex-workflow.md`, `docs/codex-mcp-setup.md`, `.codex/config.example.toml`, or this guide as applicable.
+
+When a changed owner document has a Russian counterpart, update both language versions unless the task is explicitly limited to internal-only documentation without a counterpart. English remains canonical if counterparts disagree.
 
 ## Indexing Policy
 
@@ -99,5 +147,7 @@ A documentation task is complete when:
 2. Claims have been checked against the verification matrix for that topic.
 3. New or changed links point to existing paths.
 4. Markdown has been read back for obvious formatting issues.
-5. Tests or commands are run only when they are relevant to the documentation change; for docs-only edits, readback is sufficient unless the user asks for more validation.
-6. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.
+5. The document still has one primary responsibility, and duplicated context has been replaced with links where possible.
+6. Tests or commands are run only when they are relevant to the documentation change; for docs-only edits, readback is sufficient unless the user asks for more validation.
+7. For feature or behavior changes, documentation impact has been updated or explicitly marked as not applicable with checked sources.
+8. The final response lists changed documents, checked sources, indexing changes, and remaining assumptions.
