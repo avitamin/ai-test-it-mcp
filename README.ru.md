@@ -25,9 +25,11 @@ MCP-сервер для Test IT REST API. Он работает через JSON-
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
 export TESTIT_TOKEN="your-token"
+# Optional: private_token или bearer; default is private_token.
+export TESTIT_AUTH_TYPE="private_token"
 ```
 
-`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет префикс `Bearer`.
+`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет authorization prefix. По умолчанию используются приватные API-токены Test IT, документированные как `PrivateToken {API Secret Key}`. Используйте `TESTIT_AUTH_TYPE=bearer`, только если нужен Bearer token.
 
 ## Прямой запуск
 

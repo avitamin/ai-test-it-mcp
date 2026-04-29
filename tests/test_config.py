@@ -18,6 +18,7 @@ class SettingsTests(unittest.TestCase):
             settings = Settings.from_env()
         self.assertEqual(settings.base_url, "https://demo.testit.software")
         self.assertEqual(settings.token, "secret")
+        self.assertEqual(settings.auth_type, "private_token")
         self.assertEqual(settings.timeout_seconds, 30)
         self.assertTrue(settings.verify_ssl)
         self.assertEqual(settings.log_level, "INFO")
@@ -32,6 +33,36 @@ class SettingsTests(unittest.TestCase):
             "TESTIT_BASE_URL": "https://demo.testit.software",
             "TESTIT_TOKEN": "secret",
             "TESTIT_VERIFY_SSL": "maybe",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaises(ConfigurationError):
+                Settings.from_env()
+
+    def test_reads_private_token_auth_type(self) -> None:
+        env = {
+            "TESTIT_BASE_URL": "https://demo.testit.software",
+            "TESTIT_TOKEN": "secret",
+            "TESTIT_AUTH_TYPE": "private_token",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            settings = Settings.from_env()
+        self.assertEqual(settings.auth_type, "private_token")
+
+    def test_reads_bearer_auth_type(self) -> None:
+        env = {
+            "TESTIT_BASE_URL": "https://demo.testit.software",
+            "TESTIT_TOKEN": "secret",
+            "TESTIT_AUTH_TYPE": "bearer",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            settings = Settings.from_env()
+        self.assertEqual(settings.auth_type, "bearer")
+
+    def test_invalid_auth_type_raises(self) -> None:
+        env = {
+            "TESTIT_BASE_URL": "https://demo.testit.software",
+            "TESTIT_TOKEN": "secret",
+            "TESTIT_AUTH_TYPE": "jwt",
         }
         with patch.dict(os.environ, env, clear=True):
             with self.assertRaises(ConfigurationError):

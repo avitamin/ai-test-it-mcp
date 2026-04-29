@@ -25,9 +25,11 @@ You will need these Test IT values when configuring the client:
 ```bash
 export TESTIT_BASE_URL="https://testit.example.com"
 export TESTIT_TOKEN="your-token"
+# Optional: private_token or bearer; default is private_token.
+export TESTIT_AUTH_TYPE="private_token"
 ```
 
-`TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
+`TESTIT_TOKEN` must contain only the raw token value. The server adds the authorization prefix itself. By default, it uses Test IT private API tokens documented as `PrivateToken {API Secret Key}`. Use `TESTIT_AUTH_TYPE=bearer` only when a Bearer token is intentionally needed.
 
 ## Run Directly
 

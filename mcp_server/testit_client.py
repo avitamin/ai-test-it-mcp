@@ -48,6 +48,11 @@ class TestItClient:
         if not settings.verify_ssl:
             self._ssl_context = ssl._create_unverified_context()
 
+    def _authorization_header(self) -> str:
+        if self._settings.auth_type == "private_token":
+            return f"PrivateToken {self._settings.token}"
+        return f"Bearer {self._settings.token}"
+
     def _request(
         self,
         method: str,
@@ -62,7 +67,7 @@ class TestItClient:
         payload = None
         headers = {
             "Accept": "application/json",
-            "Authorization": f"Bearer {self._settings.token}",
+            "Authorization": self._authorization_header(),
         }
         if body is not None:
             payload = json.dumps(body).encode("utf-8")

@@ -165,7 +165,7 @@ Add or update index links only when the document is user-facing or needed for na
 - Separate verified facts from assumptions.
 - Do not include real Test IT tokens, private endpoint credentials, or private environment values.
 - Do not include private company names, private hostnames, private project IDs, or real UUIDs in either language.
-- Preserve the documented behavior that `TESTIT_TOKEN` is raw and the server adds the `Bearer` prefix.
+- Preserve the documented behavior that `TESTIT_TOKEN` is raw, `TESTIT_AUTH_TYPE` controls the prefix, and `private_token` is the default.
 
 ## Completion Criteria
 
