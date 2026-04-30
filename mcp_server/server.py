@@ -36,6 +36,53 @@ def _schema(
     }
 
 
+_COMMON_ENTITY_FIELDS: dict[str, Any] = {
+    "projectId": {"type": "string"},
+    "name": {"type": "string"},
+    "description": {"type": "string"},
+}
+
+_WORK_ITEM_FIELDS: dict[str, Any] = {
+    "projectId": {"type": "string"},
+    "sectionId": {"type": "string"},
+    "name": {"type": "string"},
+    "description": {"type": "string"},
+    "state": {"type": "string"},
+    "priority": {"type": "string"},
+    "sourceType": {"type": "string"},
+    "steps": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "preconditionSteps": {"type": "array", "items": {"type": "object"}},
+    "postconditionSteps": {"type": "array", "items": {"type": "object"}},
+    "duration": {"type": "integer"},
+    "attributes": {"type": "object"},
+    "tags": {"type": "array", "items": {"type": "object"}},
+    "links": {"type": "array", "items": {"type": "object"}},
+    "attachments": {"type": "array", "items": {"type": "object"}},
+    "entityTypeName": {"type": "string"},
+}
+
+_TEST_CASE_UPDATE_FIELDS: dict[str, Any] = {
+    "testCaseId": {"type": "string"},
+    **{key: value for key, value in _WORK_ITEM_FIELDS.items() if key != "projectId"},
+    "iterations": {"type": "array", "items": {"type": "object"}},
+    "autoTests": {"type": "array", "items": {"type": "object"}},
+}
+
+_TEST_RUN_FIELDS: dict[str, Any] = {
+    **_COMMON_ENTITY_FIELDS,
+    "testPlanId": {"type": "string"},
+}
+
+_TEST_RESULT_FIELDS: dict[str, Any] = {
+    "projectId": {"type": "string"},
+    "testRunId": {"type": "string"},
+    "testCaseId": {"type": "string"},
+    "outcome": {"type": "string"},
+    "comment": {"type": "string"},
+    "duration": {"type": "integer"},
+}
+
+
 def build_tools(service: TestItService) -> list[ToolDefinition]:
     return [
         ToolDefinition(
@@ -64,20 +111,24 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
         ToolDefinition(
             "get_test_suite",
             "Get a single test suite by ID.",
-            _schema({"testSuiteId": {"type": "string"}}, ["testSuiteId"], additional_properties=True),
+            _schema({"testSuiteId": {"type": "string"}}, ["testSuiteId"]),
             service.get_test_suite,
         ),
         ToolDefinition(
             "create_test_suite",
             "Create a test suite.",
-            _schema({"projectId": {"type": "string"}, "name": {"type": "string"}}, ["projectId", "name"], additional_properties=True),
+            _schema(_COMMON_ENTITY_FIELDS, ["projectId", "name"]),
             service.create_test_suite,
+            risk="write",
+            target_fields=("projectId",),
         ),
         ToolDefinition(
             "update_test_suite",
             "Update a test suite.",
-            _schema({"testSuiteId": {"type": "string"}}, ["testSuiteId"], additional_properties=True),
+            _schema({"testSuiteId": {"type": "string"}, "name": {"type": "string"}, "description": {"type": "string"}}, ["testSuiteId"]),
             service.update_test_suite,
+            risk="write",
+            target_fields=("testSuiteId",),
         ),
         ToolDefinition(
             "list_test_plans",
@@ -100,14 +151,18 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
         ToolDefinition(
             "create_test_plan",
             "Create a test plan.",
-            _schema({"projectId": {"type": "string"}, "name": {"type": "string"}}, ["projectId", "name"], additional_properties=True),
+            _schema(_COMMON_ENTITY_FIELDS, ["projectId", "name"]),
             service.create_test_plan,
+            risk="write",
+            target_fields=("projectId",),
         ),
         ToolDefinition(
             "update_test_plan",
             "Update a test plan.",
-            _schema({"testPlanId": {"type": "string"}}, ["testPlanId"], additional_properties=True),
+            _schema({"testPlanId": {"type": "string"}, "name": {"type": "string"}, "description": {"type": "string"}}, ["testPlanId"]),
             service.update_test_plan,
+            risk="write",
+            target_fields=("testPlanId",),
         ),
         ToolDefinition(
             "search_test_cases",
@@ -139,30 +194,33 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
             "create_test_case",
             "Create a test case.",
             _schema(
-                {
-                    "projectId": {"type": "string"},
-                    "sectionId": {"type": "string"},
-                    "name": {"type": "string"},
-                    "state": {"type": "string"},
-                    "priority": {"type": "string"},
-                    "steps": {"type": "array", "items": {"type": "object"}},
-                },
+                _WORK_ITEM_FIELDS,
                 ["projectId", "sectionId", "name", "state", "priority", "steps"],
-                additional_properties=True,
             ),
             service.create_test_case,
+            risk="write",
+            target_fields=("projectId", "sectionId"),
         ),
         ToolDefinition(
             "update_test_case",
             "Update a test case.",
-            _schema({"testCaseId": {"type": "string"}}, ["testCaseId"], additional_properties=True),
+            _schema(_TEST_CASE_UPDATE_FIELDS, ["testCaseId"]),
             service.update_test_case,
+            risk="write",
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testCaseId",),
         ),
         ToolDefinition(
             "delete_test_case",
             "Delete a test case.",
             _schema({"testCaseId": {"type": "string"}}, ["testCaseId"]),
             service.delete_test_case,
+            risk="destructive",
+            destructive=True,
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testCaseId",),
         ),
         ToolDefinition(
             "get_test_case_steps",
@@ -191,19 +249,12 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
             "create_shared_step",
             "Create a shared step work item.",
             _schema(
-                {
-                    "projectId": {"type": "string"},
-                    "sectionId": {"type": "string"},
-                    "name": {"type": "string"},
-                    "state": {"type": "string"},
-                    "priority": {"type": "string"},
-                    "steps": {"type": "array", "items": {"type": "object"}},
-                    "entityTypeName": {"type": "string"},
-                },
+                _WORK_ITEM_FIELDS,
                 ["projectId", "sectionId", "name", "state", "priority", "steps"],
-                additional_properties=True,
             ),
             service.create_shared_step,
+            risk="write",
+            target_fields=("projectId", "sectionId"),
         ),
         ToolDefinition(
             "replace_test_case_steps_with_shared_step",
@@ -219,6 +270,10 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
                 ["testCaseId", "sharedStepId"],
             ),
             service.replace_test_case_steps_with_shared_step,
+            risk="write",
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testCaseId", "sharedStepId"),
         ),
         ToolDefinition(
             "extract_shared_step_from_test_case_steps",
@@ -239,6 +294,10 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
                 ["testCaseId", "projectId", "sectionId", "name", "state", "priority"],
             ),
             service.extract_shared_step_from_test_case_steps,
+            risk="write",
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testCaseId", "projectId", "sectionId"),
         ),
         ToolDefinition(
             "parameterize_test_case",
@@ -254,6 +313,10 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
                 ["testCaseId", "projectId"],
             ),
             service.parameterize_test_case,
+            risk="write",
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testCaseId", "projectId"),
         ),
         ToolDefinition(
             "list_test_runs",
@@ -287,20 +350,29 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
         ToolDefinition(
             "create_test_run",
             "Create a test run.",
-            _schema({"projectId": {"type": "string"}, "name": {"type": "string"}}, ["projectId", "name"], additional_properties=True),
+            _schema(_TEST_RUN_FIELDS, ["projectId", "name"]),
             service.create_test_run,
+            risk="write",
+            target_fields=("projectId",),
         ),
         ToolDefinition(
             "update_test_run",
             "Update a test run.",
-            _schema({"testRunId": {"type": "string"}}, ["testRunId"], additional_properties=True),
+            _schema({"testRunId": {"type": "string"}, "name": {"type": "string"}, "description": {"type": "string"}, "testPlanId": {"type": "string"}}, ["testRunId"]),
             service.update_test_run,
+            risk="write",
+            target_fields=("testRunId",),
         ),
         ToolDefinition(
             "complete_test_run",
             "Complete a test run.",
             _schema({"testRunId": {"type": "string"}}, ["testRunId"]),
             service.complete_test_run,
+            risk="destructive",
+            destructive=True,
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("testRunId",),
         ),
         ToolDefinition(
             "list_test_results",
@@ -329,14 +401,18 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
         ToolDefinition(
             "create_test_result",
             "Create a test result.",
-            _schema({"projectId": {"type": "string"}}, ["projectId"], additional_properties=True),
+            _schema(_TEST_RESULT_FIELDS, ["projectId"]),
             service.create_test_result,
+            risk="write",
+            target_fields=("projectId", "testRunId", "testCaseId"),
         ),
         ToolDefinition(
             "update_test_result",
             "Update a test result.",
-            _schema({"testResultId": {"type": "string"}}, ["testResultId"], additional_properties=True),
+            _schema({"testResultId": {"type": "string"}, **{key: value for key, value in _TEST_RESULT_FIELDS.items() if key != "projectId"}}, ["testResultId"]),
             service.update_test_result,
+            risk="write",
+            target_fields=("testResultId",),
         ),
         ToolDefinition(
             "link_test_cases_to_suite_or_plan",
@@ -350,6 +426,8 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
                 ["parentType", "parentId", "testCaseIds"],
             ),
             service.link_test_cases_to_suite_or_plan,
+            risk="write",
+            target_fields=("parentType", "parentId"),
         ),
         ToolDefinition(
             "unlink_test_cases_from_suite_or_plan",
@@ -363,6 +441,11 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
                 ["parentType", "parentId", "testCaseIds"],
             ),
             service.unlink_test_cases_from_suite_or_plan,
+            risk="destructive",
+            destructive=True,
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("parentType", "parentId"),
         ),
     ]
 

@@ -28,6 +28,7 @@ python3 -m unittest discover -s tests -v
 - config parsing
 - error mapping
 - базовые проверки MCP protocol
+- MCP argument schema validation и preview/apply guards
 - service-layer validation и request shaping
 
 Tests используют стандартную библиотеку `unittest`. Держите tests offline с небольшими fake clients или mocks.
@@ -62,6 +63,8 @@ MCP surface нормализован для LLM/tool callers, но некото�
 - `list_test_runs` scoped по project и ожидает state flags
 - `list_test_results` search-based, а не простой collection `GET`
 - некоторые list endpoints в Test IT возвращают arrays напрямую, а не paginated envelopes
+- write tools используют explicit allowlists вместо arbitrary Test IT payload pass-through
+- high-impact write tools должны иметь preview/apply coverage и tests
 
 Если вы меняете API routing assumptions, сначала проверьте их по cached v2 contract. Наиболее вероятные поломки связаны с endpoint shape differences между Test IT deployments.
 
@@ -70,5 +73,5 @@ MCP surface нормализован для LLM/tool callers, но некото�
 - нет support для attachments в v1
 - нет MCP `resources` или `prompts`
 - нет bulk operations, кроме уже exposed операций link/unlink style
-- некоторые create/update payloads передаются through с минимальной normalization, поэтому callers должны держаться близко к реальным Test IT field names там, где это требуется
+- write payload coverage намеренно уже, чем upstream Test IT API
 - реализация намеренно легковесная и использует HTTP stack стандартной библиотеки Python вместо `httpx`

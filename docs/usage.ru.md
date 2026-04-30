@@ -232,12 +232,45 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
 }
 ```
 
-### Parameterize Test Case
+High-impact write tools также поддерживают workflow preview/apply. Например, сначала preview удаления test case:
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id"
+    }
+  }
+}
+```
+
+Затем примените ту же операцию в течение 10 минут, передав возвращенный `operationId` с теми же аргументами:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "method": "tools/call",
+  "params": {
+    "name": "apply_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "operationId": "replace-operation-id-from-preview"
+    }
+  }
+}
+```
+
+### Parameterize Test Case
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 12,
   "method": "tools/call",
   "params": {
     "name": "parameterize_test_case",
@@ -273,7 +306,7 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 11,
+  "id": 13,
   "method": "tools/call",
   "params": {
     "name": "list_test_runs",
@@ -295,7 +328,7 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 12,
+  "id": 14,
   "method": "tools/call",
   "params": {
     "name": "list_test_results",

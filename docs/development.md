@@ -28,6 +28,7 @@ Current test coverage includes:
 - config parsing
 - error mapping
 - MCP protocol basics
+- MCP argument schema validation and preview/apply guards
 - service-layer validation and request shaping
 
 Tests use the standard library `unittest`. Keep tests offline with small fake clients or mocks.
@@ -62,6 +63,8 @@ The MCP surface is normalized for LLM/tool callers, but some upstream API constr
 - `list_test_runs` is project-scoped and expects state flags
 - `list_test_results` is search-based, not a simple collection `GET`
 - some list endpoints in Test IT return arrays directly, not paginated envelopes
+- write tools use explicit allowlists instead of arbitrary Test IT payload pass-through
+- high-impact write tools should expose preview/apply coverage and tests
 
 If you change API routing assumptions, validate them against the cached v2 contract first. The most likely breakages are endpoint shape differences between Test IT deployments.
 
@@ -70,7 +73,7 @@ If you change API routing assumptions, validate them against the cached v2 contr
 - no attachments support in v1
 - no MCP `resources` or `prompts`
 - no bulk operations except link/unlink style operations already exposed
-- some create/update payloads are passed through with minimal normalization, so callers should stay close to real Test IT field names where required
+- write payload coverage is intentionally narrower than the upstream Test IT API
 - the implementation is intentionally lightweight and uses the Python standard library HTTP stack instead of `httpx`
 
 ## Repository Guides

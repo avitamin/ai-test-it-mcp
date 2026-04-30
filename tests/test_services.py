@@ -130,6 +130,32 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(call[1]["body"]["filter"]["types"], ["TestCases"])
         self.assertEqual(call[1]["body"]["filter"]["nameOrId"], "login")
 
+    def test_create_test_case_does_not_pass_unknown_fields(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        service.create_test_case(
+            {
+                "projectId": "p1",
+                "sectionId": "s1",
+                "name": "Case",
+                "state": "NotReady",
+                "priority": "Medium",
+                "steps": [{"action": "A"}],
+                "unexpected": "drop",
+            }
+        )
+        call = client.calls[0]
+        self.assertEqual(call[0], "create")
+        self.assertNotIn("unexpected", call[2])
+
+    def test_update_test_case_does_not_pass_unknown_fields(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        service.update_test_case({"testCaseId": "tc1", "name": "Updated", "projectId": "drop", "unexpected": "drop"})
+        call = client.calls[0]
+        self.assertEqual(call[0], "update_work_item")
+        self.assertEqual(call[2], {"name": "Updated"})
+
     def test_list_test_suites_requires_test_plan(self) -> None:
         service = TestItService(FakeClient())
         with self.assertRaises(ValidationError):

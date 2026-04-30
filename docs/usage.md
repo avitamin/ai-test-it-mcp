@@ -232,12 +232,45 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 }
 ```
 
-### Parameterize Test Case
+High-impact write tools also support a preview/apply workflow. For example, preview a test case deletion first:
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id"
+    }
+  }
+}
+```
+
+Then apply the same operation within 10 minutes by passing the returned `operationId` with the same arguments:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "method": "tools/call",
+  "params": {
+    "name": "apply_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "operationId": "replace-operation-id-from-preview"
+    }
+  }
+}
+```
+
+### Parameterize Test Case
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 12,
   "method": "tools/call",
   "params": {
     "name": "parameterize_test_case",
@@ -273,7 +306,7 @@ The referenced parameters must already exist in Test IT for the project. The too
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 11,
+  "id": 13,
   "method": "tools/call",
   "params": {
     "name": "list_test_runs",
@@ -295,7 +328,7 @@ The referenced parameters must already exist in Test IT for the project. The too
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 12,
+  "id": 14,
   "method": "tools/call",
   "params": {
     "name": "list_test_results",

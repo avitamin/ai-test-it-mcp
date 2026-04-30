@@ -60,6 +60,126 @@ class ProtocolTests(unittest.TestCase):
         )
         self.assertEqual(failure["error"]["data"]["code"], "ValidationError")
 
+    def test_tool_call_validates_declared_schema(self) -> None:
+        tool = ToolDefinition(
+            name="strict",
+            description="Strict tool",
+            input_schema={
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "required": ["name"],
+                "additionalProperties": False,
+            },
+            handler=lambda arguments: {"arguments": arguments},
+        )
+        server = McpServer("name", "1.0.0", [tool])
+
+        failure = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {"name": "strict", "arguments": {"name": "ok", "extra": True}},
+            }
+        )
+
+        self.assertEqual(failure["error"]["data"]["code"], "ValidationError")
+        self.assertEqual(failure["error"]["data"]["details"]["fields"], ["extra"])
+
+    def test_preview_and_apply_tools_are_generated_for_high_impact_tools(self) -> None:
+        calls = []
+
+        tool = ToolDefinition(
+            name="delete_thing",
+            description="Delete thing",
+            input_schema={
+                "type": "object",
+                "properties": {"thingId": {"type": "string"}},
+                "required": ["thingId"],
+                "additionalProperties": False,
+            },
+            handler=lambda arguments: calls.append(arguments) or {"deleted": arguments["thingId"]},
+            risk="destructive",
+            destructive=True,
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("thingId",),
+        )
+        server = McpServer("name", "1.0.0", [tool])
+
+        listing = server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
+        by_name = {item["name"]: item for item in listing["result"]["tools"]}
+        self.assertTrue(by_name["delete_thing"]["metadata"]["supportsPreview"])
+        self.assertTrue(by_name["delete_thing"]["annotations"]["destructiveHint"])
+        self.assertIn("preview_delete_thing", by_name)
+        self.assertIn("apply_delete_thing", by_name)
+
+        preview = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {"name": "preview_delete_thing", "arguments": {"thingId": "t1"}},
+            }
+        )
+        self.assertEqual(calls, [])
+        operation_id = preview["result"]["structuredContent"]["operationId"]
+
+        apply_result = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {
+                    "name": "apply_delete_thing",
+                    "arguments": {"thingId": "t1", "operationId": operation_id},
+                },
+            }
+        )
+        self.assertEqual(calls, [{"thingId": "t1"}])
+        self.assertTrue(apply_result["result"]["structuredContent"]["success"])
+
+    def test_apply_rejects_operation_id_for_changed_arguments(self) -> None:
+        tool = ToolDefinition(
+            name="delete_thing",
+            description="Delete thing",
+            input_schema={
+                "type": "object",
+                "properties": {"thingId": {"type": "string"}},
+                "required": ["thingId"],
+                "additionalProperties": False,
+            },
+            handler=lambda arguments: {"deleted": arguments["thingId"]},
+            risk="destructive",
+            destructive=True,
+            high_impact=True,
+            supports_preview=True,
+            target_fields=("thingId",),
+        )
+        server = McpServer("name", "1.0.0", [tool])
+        preview = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": "preview_delete_thing", "arguments": {"thingId": "t1"}},
+            }
+        )
+
+        failure = server.handle(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {
+                    "name": "apply_delete_thing",
+                    "arguments": {"thingId": "t2", "operationId": preview["result"]["structuredContent"]["operationId"]},
+                },
+            }
+        )
+
+        self.assertEqual(failure["error"]["data"]["code"], "ValidationError")
+
     def test_stdio_transport_roundtrip(self) -> None:
         payload = {"jsonrpc": "2.0", "id": 1, "method": "ping"}
         body = json.dumps(payload).encode("utf-8")

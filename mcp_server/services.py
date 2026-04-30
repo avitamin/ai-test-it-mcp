@@ -8,6 +8,40 @@ from .models import PaginationInput
 from .testit_client import TestItClient
 
 
+COMMON_ENTITY_FIELDS = {"projectId", "name", "description"}
+TEST_RUN_FIELDS = COMMON_ENTITY_FIELDS | {"testPlanId"}
+TEST_RESULT_FIELDS = {"projectId", "testRunId", "testCaseId", "outcome", "comment", "duration"}
+WORK_ITEM_FIELDS = {
+    "projectId",
+    "sectionId",
+    "name",
+    "description",
+    "state",
+    "priority",
+    "sourceType",
+    "steps",
+    "preconditionSteps",
+    "postconditionSteps",
+    "duration",
+    "attributes",
+    "tags",
+    "links",
+    "attachments",
+    "entityTypeName",
+    "entityType",
+}
+TEST_CASE_UPDATE_FIELDS = (WORK_ITEM_FIELDS - {"projectId", "entityType"}) | {"iterations", "autoTests"}
+
+
+def _payload(arguments: dict[str, Any], allowed_fields: set[str], *, exclude: set[str] | None = None) -> dict[str, Any]:
+    excluded = exclude or set()
+    return {
+        key: value
+        for key, value in arguments.items()
+        if key in allowed_fields and key not in excluded
+    }
+
+
 def _pagination(arguments: dict[str, Any]) -> PaginationInput:
     page = int(arguments.get("page", 1))
     page_size = int(arguments.get("pageSize", 20))
@@ -163,7 +197,7 @@ def _update_work_item_payload(work_item: dict[str, Any], work_item_id: str) -> d
 
 
 def _create_work_item_payload(arguments: dict[str, Any], *, entity_type: str, duration: int) -> dict[str, Any]:
-    payload = dict(arguments)
+    payload = _payload(arguments, WORK_ITEM_FIELDS)
     payload["entityTypeName"] = payload.pop("entityType", payload.get("entityTypeName", entity_type))
     payload.pop("parameters", None)
     payload.setdefault("duration", duration)
@@ -285,11 +319,11 @@ class TestItService:
         return self._client.get_entity("test_suite", _required(arguments, "testSuiteId"))
 
     def create_test_suite(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.create_entity("test_suite", arguments)
+        return self._client.create_entity("test_suite", _payload(arguments, COMMON_ENTITY_FIELDS))
 
     def update_test_suite(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_suite_id = _required(arguments, "testSuiteId")
-        payload = {key: value for key, value in arguments.items() if key != "testSuiteId"}
+        payload = _payload(arguments, {"name", "description"})
         return self._client.update_entity("test_suite", test_suite_id, payload)
 
     def list_test_plans(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -302,11 +336,11 @@ class TestItService:
         return self._client.get_entity("test_plan", _required(arguments, "testPlanId"))
 
     def create_test_plan(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.create_entity("test_plan", arguments)
+        return self._client.create_entity("test_plan", _payload(arguments, COMMON_ENTITY_FIELDS))
 
     def update_test_plan(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_plan_id = _required(arguments, "testPlanId")
-        payload = {key: value for key, value in arguments.items() if key != "testPlanId"}
+        payload = _payload(arguments, {"name", "description"})
         return self._client.update_entity("test_plan", test_plan_id, payload)
 
     def search_test_cases(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -332,7 +366,7 @@ class TestItService:
 
     def update_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_case_id = _required(arguments, "testCaseId")
-        payload = {key: value for key, value in arguments.items() if key != "testCaseId"}
+        payload = _payload(arguments, TEST_CASE_UPDATE_FIELDS)
         return self._client.update_work_item(test_case_id, payload)
 
     def delete_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -558,11 +592,11 @@ class TestItService:
         return self._client.get_entity("test_run", _required(arguments, "testRunId"))
 
     def create_test_run(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.create_entity("test_run", arguments)
+        return self._client.create_entity("test_run", _payload(arguments, TEST_RUN_FIELDS))
 
     def update_test_run(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_run_id = _required(arguments, "testRunId")
-        payload = {key: value for key, value in arguments.items() if key != "testRunId"}
+        payload = _payload(arguments, {"name", "description", "testPlanId"})
         return self._client.update_entity("test_run", test_run_id, payload)
 
     def complete_test_run(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -585,11 +619,11 @@ class TestItService:
         return self._client.get_entity("test_result", _required(arguments, "testResultId"))
 
     def create_test_result(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.create_entity("test_result", arguments)
+        return self._client.create_entity("test_result", _payload(arguments, TEST_RESULT_FIELDS))
 
     def update_test_result(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_result_id = _required(arguments, "testResultId")
-        payload = {key: value for key, value in arguments.items() if key != "testResultId"}
+        payload = _payload(arguments, TEST_RESULT_FIELDS - {"projectId"})
         return self._client.update_entity("test_result", test_result_id, payload)
 
     def link_test_cases_to_suite_or_plan(self, arguments: dict[str, Any]) -> dict[str, Any]:
