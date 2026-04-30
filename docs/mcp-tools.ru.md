@@ -53,8 +53,26 @@ Paginated tools используют:
 - `create_test_case`: required `projectId`, `name`; additional Test IT fields are passed through
 - `update_test_case`: required `testCaseId`; additional Test IT fields are passed through
 - `delete_test_case`: required `testCaseId`
+- `get_test_case_steps`: required `testCaseId`
+- `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
 
 Test cases используют upstream Test IT work item endpoints.
+
+`get_test_case_steps` нормализует поля шагов и параметров из полученного work item. `parameterize_test_case` добавляет параметры в существующий test case и отклоняет конфликтующие определения существующих параметров, если `allowParameterOverwrite` не равен true. Элементы `replacements` используют `value` и `parameterName`; найденный текст шага заменяется на `{{parameterName}}`.
+
+Selectors шагов используют ровно одно поле:
+
+- `stepIds`: upstream step IDs
+- `stepIndexes`: 1-based позиции шагов в текущем test case
+
+## Shared Steps
+
+- `search_shared_steps`: required `projectId`; optional `page`, `pageSize`, `search`, `OrderBy`, `SearchField`, `SearchValue`
+- `create_shared_step`: required `projectId`, `name`, `steps`; optional `parameters`, `entityType`; additional Test IT fields are passed through
+- `replace_test_case_steps_with_shared_step`: required `testCaseId`, `sharedStepId`; plus exactly one of `stepIds` или `stepIndexes`; optional `parameterValues`
+- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `name`; plus exactly one of `stepIds` или `stepIndexes`; optional `parameters`, `parameterValues`, `entityType`
+
+Shared step tools используют upstream Test IT work item endpoints. `create_shared_step` по умолчанию отправляет `entityType` как `SharedSteps`; переопределяйте его только если Swagger вашей Test IT инсталляции использует другой discriminator. Replacement tools читают текущий test case, меняют только список шагов и отправляют измененный work item обратно в Test IT.
 
 ## Test Runs
 

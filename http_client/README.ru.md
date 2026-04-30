@@ -15,6 +15,7 @@
   - test plans by project
   - test suites by test plan
   - project work items
+  - shared step search and references
   - project test runs
   - test results search
 

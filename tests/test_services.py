@@ -46,6 +46,37 @@ class FakeClient:
         self.calls.append(("delete", entity, entity_id))
         return {"success": True, "entityId": entity_id}
 
+    def search_work_items(self, **kwargs):
+        self.calls.append(("search_work_items", kwargs))
+        return {"items": [], "page": kwargs["pagination"].page, "pageSize": kwargs["pagination"].page_size, "total": 0, "nextPage": None}
+
+    def get_work_item(self, work_item_id):
+        self.calls.append(("get_work_item", work_item_id))
+        return {
+            "entity": {
+                "id": work_item_id,
+                "name": "Case",
+                "steps": [
+                    {"id": "s1", "action": "Open login page"},
+                    {"id": "s2", "action": "Enter user"},
+                    {"id": "s3", "action": "Submit"},
+                ],
+                "parameters": [{"name": "existing", "value": "ok"}],
+            }
+        }
+
+    def update_work_item(self, work_item_id, data):
+        self.calls.append(("update_work_item", work_item_id, data))
+        return {"entity": data}
+
+    def create_shared_step(self, data):
+        self.calls.append(("create_shared_step", data))
+        return {"entity": {"id": "shared-1", **data}, "entityId": "shared-1"}
+
+    def get_shared_step_references(self, shared_step_id):
+        self.calls.append(("get_shared_step_references", shared_step_id))
+        return {"items": []}
+
     def complete_test_run(self, run_id):
         self.calls.append(("complete", run_id))
         return {"success": True}
@@ -97,3 +128,75 @@ class ServiceTests(unittest.TestCase):
             service.link_test_cases_to_suite_or_plan(
                 {"parentType": "project", "parentId": "1", "testCaseIds": ["a"]}
             )
+
+    def test_search_shared_steps_builds_work_item_search(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        service.search_shared_steps({"projectId": "p1", "search": "login", "pageSize": 5})
+        call = client.calls[0]
+        self.assertEqual(call[0], "search_work_items")
+        self.assertEqual(call[1]["body"]["projectIds"], ["p1"])
+        self.assertEqual(call[1]["body"]["entityTypes"], ["SharedSteps"])
+        self.assertEqual(call[1]["body"]["search"], "login")
+        self.assertEqual(call[1]["pagination"].page_size, 5)
+
+    def test_replace_test_case_steps_with_shared_step_uses_one_based_indexes(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        result = service.replace_test_case_steps_with_shared_step(
+            {
+                "testCaseId": "tc1",
+                "sharedStepId": "shared-1",
+                "stepIndexes": [2, 3],
+                "parameterValues": {"user": "admin"},
+            }
+        )
+        self.assertEqual(result["replacedStepIndexes"], [2, 3])
+        update_call = client.calls[-1]
+        self.assertEqual(update_call[0], "update_work_item")
+        self.assertEqual(update_call[2]["steps"][1]["sharedStepId"], "shared-1")
+        self.assertEqual(update_call[2]["steps"][1]["parameters"]["user"], "admin")
+        self.assertEqual(len(update_call[2]["steps"]), 2)
+
+    def test_replace_test_case_steps_requires_exactly_one_selector(self) -> None:
+        service = TestItService(FakeClient())
+        with self.assertRaises(ValidationError):
+            service.replace_test_case_steps_with_shared_step(
+                {"testCaseId": "tc1", "sharedStepId": "shared-1", "stepIndexes": [1], "stepIds": ["s1"]}
+            )
+
+    def test_extract_shared_step_creates_and_replaces_steps(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        result = service.extract_shared_step_from_test_case_steps(
+            {"testCaseId": "tc1", "projectId": "p1", "name": "Login", "stepIds": ["s1", "s2"]}
+        )
+        self.assertEqual(result["sharedStepId"], "shared-1")
+        create_call = client.calls[1]
+        self.assertEqual(create_call[0], "create_shared_step")
+        self.assertEqual([step["id"] for step in create_call[1]["steps"]], ["s1", "s2"])
+        update_call = client.calls[2]
+        self.assertEqual(update_call[2]["steps"][0]["sharedStepId"], "shared-1")
+        self.assertEqual(update_call[2]["steps"][1]["id"], "s3")
+
+    def test_parameterize_test_case_rejects_conflicting_parameter(self) -> None:
+        service = TestItService(FakeClient())
+        with self.assertRaises(ValidationError):
+            service.parameterize_test_case(
+                {"testCaseId": "tc1", "parameters": [{"name": "existing", "value": "changed"}]}
+            )
+
+    def test_parameterize_test_case_merges_and_replaces_step_text(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        result = service.parameterize_test_case(
+            {
+                "testCaseId": "tc1",
+                "parameters": [{"name": "user", "value": "admin"}],
+                "replacements": [{"value": "user", "parameterName": "user"}],
+            }
+        )
+        self.assertEqual(result["changedParameters"], ["user"])
+        update_call = client.calls[-1]
+        self.assertEqual(update_call[2]["parameters"][-1]["name"], "user")
+        self.assertEqual(update_call[2]["steps"][1]["action"], "Enter {{user}}")

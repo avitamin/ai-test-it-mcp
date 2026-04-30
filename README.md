@@ -87,6 +87,7 @@ The tool set covers common Test IT workflows:
 - list and fetch projects
 - list, create, update, and fetch test plans and test suites
 - search, create, update, fetch, and delete test cases
+- inspect test case steps, create shared steps, replace case steps with shared steps, and parameterize test cases
 - list, create, update, fetch, and complete test runs
 - list, create, update, and fetch test results
 - link or unlink test cases to a test suite or test plan

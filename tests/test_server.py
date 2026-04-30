@@ -6,6 +6,7 @@ import unittest
 
 from mcp_server.mcp_protocol import McpServer, StdioTransport, ToolDefinition
 from mcp_server.errors import ValidationError
+from mcp_server.server import build_tools
 
 
 class ProtocolTests(unittest.TestCase):
@@ -82,3 +83,21 @@ class ProtocolTests(unittest.TestCase):
 
         message = transport.read_message()
         self.assertEqual(message["method"], "ping")
+
+    def test_build_tools_includes_advanced_step_tools(self) -> None:
+        class Service:
+            def __getattr__(self, name):
+                return lambda arguments: {"ok": True}
+
+        tools = build_tools(Service())
+        by_name = {tool.name: tool for tool in tools}
+        self.assertIn("get_test_case_steps", by_name)
+        self.assertIn("search_shared_steps", by_name)
+        self.assertIn("create_shared_step", by_name)
+        self.assertIn("replace_test_case_steps_with_shared_step", by_name)
+        self.assertIn("extract_shared_step_from_test_case_steps", by_name)
+        self.assertIn("parameterize_test_case", by_name)
+        self.assertEqual(
+            by_name["replace_test_case_steps_with_shared_step"].input_schema["required"],
+            ["testCaseId", "sharedStepId"],
+        )

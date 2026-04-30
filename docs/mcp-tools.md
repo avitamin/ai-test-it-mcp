@@ -53,8 +53,26 @@ For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and re
 - `create_test_case`: required `projectId`, `name`; additional Test IT fields are passed through
 - `update_test_case`: required `testCaseId`; additional Test IT fields are passed through
 - `delete_test_case`: required `testCaseId`
+- `get_test_case_steps`: required `testCaseId`
+- `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
 
 Test cases use Test IT work item endpoints upstream.
+
+`get_test_case_steps` normalizes step and parameter fields from the fetched work item. `parameterize_test_case` merges parameters into the existing test case and rejects conflicting existing parameter definitions unless `allowParameterOverwrite` is true. Replacement entries use `value` and `parameterName`; matching step text is replaced with `{{parameterName}}`.
+
+Step selectors use exactly one of:
+
+- `stepIds`: upstream step IDs
+- `stepIndexes`: 1-based step positions in the current test case
+
+## Shared Steps
+
+- `search_shared_steps`: required `projectId`; optional `page`, `pageSize`, `search`, `OrderBy`, `SearchField`, `SearchValue`
+- `create_shared_step`: required `projectId`, `name`, `steps`; optional `parameters`, `entityType`; additional Test IT fields are passed through
+- `replace_test_case_steps_with_shared_step`: required `testCaseId`, `sharedStepId`; plus exactly one of `stepIds` or `stepIndexes`; optional `parameterValues`
+- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `name`; plus exactly one of `stepIds` or `stepIndexes`; optional `parameters`, `parameterValues`, `entityType`
+
+Shared step tools use Test IT work item endpoints upstream. `create_shared_step` defaults `entityType` to `SharedSteps`; override it only if your Test IT Swagger uses a different discriminator. Replacement tools fetch the current test case, update only its step list, and send the changed work item back to Test IT.
 
 ## Test Runs
 

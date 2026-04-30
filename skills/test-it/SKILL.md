@@ -171,6 +171,93 @@ MCP call:
 
 Response guidance: state what was linked and include the parent ID and test case IDs. Use `parentType: "test_plan"` only when linking directly to a test plan.
 
+### Extract Shared Step From Test Case Steps
+
+User asks: "Сделай из X Y Z шагов общий шаг в тест-кейсе A."
+
+Required context: confirmed `projectId`, `testCaseId`, new shared step name, and either upstream step IDs or exact 1-based step indexes from `get_test_case_steps`. Read the test case first when the user describes steps by text.
+
+MCP call:
+
+```json
+{
+  "tool": "extract_shared_step_from_test_case_steps",
+  "arguments": {
+    "projectId": "replace-project-id",
+    "testCaseId": "replace-test-case-id",
+    "name": "replace-shared-step-name",
+    "stepIndexes": [1, 2, 3]
+  }
+}
+```
+
+Response guidance: state the created shared step ID and which source step indexes were replaced. If step text is ambiguous, ask the user to confirm the exact steps before writing.
+
+### Replace Test Case Steps With Existing Shared Step
+
+User asks: "Замени шаги X, Y на общий шаг Z в тест-кейсе B."
+
+Required context: confirmed `testCaseId`, `sharedStepId`, and selected steps by `stepIds` or 1-based `stepIndexes`. Use `search_shared_steps` when the user gives a shared step name instead of an ID.
+
+MCP call:
+
+```json
+{
+  "tool": "replace_test_case_steps_with_shared_step",
+  "arguments": {
+    "testCaseId": "replace-test-case-id",
+    "sharedStepId": "replace-shared-step-id",
+    "stepIndexes": [2, 3],
+    "parameterValues": {
+      "user": "admin"
+    }
+  }
+}
+```
+
+Response guidance: state the shared step ID and replaced step indexes. Mention parameter values only when they are user-provided and non-sensitive.
+
+### Parameterize A Test Case
+
+User asks: "Добавь параметризацию в тест-кейс."
+
+Required context: confirmed `testCaseId`, parameter names and defaults/values, and optional literal replacements in steps. First call `get_test_case_steps` when parameters need to be found, created, or clarified from existing step text.
+
+MCP call:
+
+```json
+{
+  "tool": "parameterize_test_case",
+  "arguments": {
+    "testCaseId": "replace-test-case-id",
+    "parameters": [
+      {"name": "user", "value": "admin"}
+    ],
+    "replacements": [
+      {"value": "admin", "parameterName": "user"}
+    ]
+  }
+}
+```
+
+Response guidance: summarize changed parameter names and whether step text was updated. If a parameter already exists with a different definition, resolve the conflict with the user before setting `allowParameterOverwrite`.
+
+### Draft Test Case From Code
+
+User asks: "По коду из файла составь тест-кейс."
+
+Workflow: read the requested local file with normal code-reading tools, identify externally observable behavior, derive concise test steps and expected results, then create the Test IT case with `create_test_case`. Do not ask the Test IT MCP server to read arbitrary files.
+
+Response guidance: include the new test case ID and a short summary of covered behavior.
+
+### Draft Automated Test From Test Case And Inputs
+
+User asks: "По тест-кейсу и страничке/локаторам/cURL напиши тест."
+
+Workflow: read the Test IT case with `get_test_case`, inspect the user-provided page context, locators, or cURL using normal project tools, then edit the target test file outside this MCP server. Use Test IT tools only to read or update Test IT entities.
+
+Response guidance: identify the generated or edited test file, framework assumptions, and any locator or API gaps that still need user confirmation.
+
 ## Tool Catalog
 
 Common entry points:
@@ -179,6 +266,7 @@ Common entry points:
 - Test plans: `list_test_plans`, `get_test_plan`, `create_test_plan`, `update_test_plan`
 - Test suites: `list_test_suites`, `get_test_suite`, `create_test_suite`, `update_test_suite`
 - Test cases: `search_test_cases`, `get_test_case`, `create_test_case`, `update_test_case`, `delete_test_case`
+- Test case steps and shared steps: `get_test_case_steps`, `search_shared_steps`, `create_shared_step`, `replace_test_case_steps_with_shared_step`, `extract_shared_step_from_test_case_steps`, `parameterize_test_case`
 - Test runs: `list_test_runs`, `get_test_run`, `create_test_run`, `update_test_run`, `complete_test_run`
 - Test results: `list_test_results`, `get_test_result`, `create_test_result`, `update_test_result`
 - Links: `link_test_cases_to_suite_or_plan`, `unlink_test_cases_from_suite_or_plan`

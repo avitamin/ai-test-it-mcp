@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
-from .errors import ValidationError
+from .errors import UpstreamError, ValidationError
 from .models import PaginationInput
 from .testit_client import TestItClient
 
@@ -30,6 +31,112 @@ def _optional_filters(arguments: dict[str, Any], keys: list[str]) -> dict[str, A
         for key in keys
         if arguments.get(key) is not None
     }
+
+
+def _required_list(arguments: dict[str, Any], field: str) -> list[Any]:
+    value = _required(arguments, field)
+    if not isinstance(value, list) or not value:
+        raise ValidationError(f"{field} must be a non-empty array", {"field": field})
+    return value
+
+
+def _work_item_entity(result: dict[str, Any]) -> dict[str, Any]:
+    entity = result.get("entity")
+    if not isinstance(entity, dict):
+        raise UpstreamError("Unexpected work item response format from Test IT.", {"payloadType": type(entity).__name__})
+    return entity
+
+
+def _steps_key(work_item: dict[str, Any]) -> str:
+    for key in ("steps", "testSteps", "workItemSteps"):
+        if isinstance(work_item.get(key), list):
+            return key
+    return "steps"
+
+
+def _parameters_key(work_item: dict[str, Any]) -> str:
+    for key in ("parameters", "testParameters"):
+        if isinstance(work_item.get(key), list):
+            return key
+    return "parameters"
+
+
+def _step_id(step: Any) -> str | None:
+    if not isinstance(step, dict):
+        return None
+    value = step.get("id") or step.get("globalId") or step.get("stepId")
+    return str(value) if value not in (None, "") else None
+
+
+def _selected_step_positions(steps: list[Any], arguments: dict[str, Any]) -> list[int]:
+    has_ids = arguments.get("stepIds") is not None
+    has_indexes = arguments.get("stepIndexes") is not None
+    if has_ids == has_indexes:
+        raise ValidationError("Provide exactly one of stepIds or stepIndexes.", {"fields": ["stepIds", "stepIndexes"]})
+
+    if has_ids:
+        requested = {str(value) for value in _required_list(arguments, "stepIds")}
+        positions = [index for index, step in enumerate(steps) if _step_id(step) in requested]
+        found = {_step_id(steps[index]) for index in positions}
+        missing = sorted(requested - {value for value in found if value is not None})
+        if missing:
+            raise ValidationError("Some stepIds were not found.", {"field": "stepIds", "missing": missing})
+        return positions
+
+    positions = []
+    for raw_index in _required_list(arguments, "stepIndexes"):
+        try:
+            index = int(raw_index)
+        except (TypeError, ValueError) as exc:
+            raise ValidationError("stepIndexes must contain integers.", {"field": "stepIndexes"}) from exc
+        if index < 1 or index > len(steps):
+            raise ValidationError("stepIndexes are 1-based and must point to existing steps.", {"field": "stepIndexes"})
+        positions.append(index - 1)
+    if len(set(positions)) != len(positions):
+        raise ValidationError("stepIndexes must not contain duplicates.", {"field": "stepIndexes"})
+    return sorted(positions)
+
+
+def _shared_step_reference(shared_step_id: str, parameter_values: dict[str, Any] | None = None) -> dict[str, Any]:
+    reference = {
+        "type": "shared_step",
+        "sharedStepId": shared_step_id,
+    }
+    if parameter_values:
+        reference["parameters"] = parameter_values
+    return reference
+
+
+def _replace_positions(steps: list[Any], positions: list[int], replacement: dict[str, Any]) -> list[Any]:
+    selected = set(positions)
+    first = positions[0]
+    updated = []
+    for index, step in enumerate(steps):
+        if index == first:
+            updated.append(replacement)
+        if index not in selected:
+            updated.append(step)
+    return updated
+
+
+def _parameter_name(parameter: Any) -> str | None:
+    if not isinstance(parameter, dict):
+        return None
+    value = parameter.get("name") or parameter.get("key")
+    return str(value) if value not in (None, "") else None
+
+
+def _replace_strings(value: Any, replacements: dict[str, str]) -> Any:
+    if isinstance(value, str):
+        updated = value
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        return updated
+    if isinstance(value, list):
+        return [_replace_strings(item, replacements) for item in value]
+    if isinstance(value, dict):
+        return {key: _replace_strings(item, replacements) for key, item in value.items()}
+    return value
 
 
 class TestItService:
@@ -99,6 +206,161 @@ class TestItService:
 
     def delete_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         return self._client.delete_entity("test_case", _required(arguments, "testCaseId"))
+
+    def get_test_case_steps(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        test_case_id = _required(arguments, "testCaseId")
+        work_item = _work_item_entity(self._client.get_work_item(test_case_id))
+        steps_key = _steps_key(work_item)
+        parameters_key = _parameters_key(work_item)
+        steps = work_item.get(steps_key, [])
+        parameters = work_item.get(parameters_key, [])
+        return {
+            "testCaseId": test_case_id,
+            "steps": steps,
+            "parameters": parameters,
+            "stepsField": steps_key,
+            "parametersField": parameters_key,
+        }
+
+    def search_shared_steps(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        project_id = _required(arguments, "projectId")
+        body = {
+            "projectIds": [project_id],
+            "entityTypes": ["SharedSteps"],
+        }
+        if arguments.get("search") is not None:
+            body["search"] = arguments["search"]
+        return self._client.search_work_items(
+            pagination=_pagination(arguments),
+            filters=_optional_filters(arguments, ["OrderBy", "SearchField", "SearchValue"]),
+            body=body,
+        )
+
+    def create_shared_step(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        project_id = _required(arguments, "projectId")
+        name = _required(arguments, "name")
+        steps = _required_list(arguments, "steps")
+        payload = {
+            "projectId": project_id,
+            "name": name,
+            "entityType": arguments.get("entityType", "SharedSteps"),
+            "steps": steps,
+        }
+        if arguments.get("parameters") is not None:
+            payload["parameters"] = arguments["parameters"]
+        for key, value in arguments.items():
+            if key not in payload and key not in {"projectId", "name", "steps", "parameters", "entityType"}:
+                payload[key] = value
+        return self._client.create_shared_step(payload)
+
+    def replace_test_case_steps_with_shared_step(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        test_case_id = _required(arguments, "testCaseId")
+        shared_step_id = _required(arguments, "sharedStepId")
+        work_item = deepcopy(_work_item_entity(self._client.get_work_item(test_case_id)))
+        steps_key = _steps_key(work_item)
+        steps = work_item.get(steps_key, [])
+        positions = _selected_step_positions(steps, arguments)
+        replacement = _shared_step_reference(shared_step_id, arguments.get("parameterValues"))
+        work_item[steps_key] = _replace_positions(steps, positions, replacement)
+        result = self._client.update_work_item(test_case_id, work_item)
+        return {
+            "testCaseId": test_case_id,
+            "sharedStepId": shared_step_id,
+            "replacedStepIndexes": [index + 1 for index in positions],
+            "entity": result.get("entity"),
+        }
+
+    def extract_shared_step_from_test_case_steps(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        test_case_id = _required(arguments, "testCaseId")
+        project_id = _required(arguments, "projectId")
+        name = _required(arguments, "name")
+        work_item = deepcopy(_work_item_entity(self._client.get_work_item(test_case_id)))
+        steps_key = _steps_key(work_item)
+        steps = work_item.get(steps_key, [])
+        positions = _selected_step_positions(steps, arguments)
+        selected_steps = [deepcopy(steps[index]) for index in positions]
+        create_result = self._client.create_shared_step(
+            {
+                "projectId": project_id,
+                "name": name,
+                "entityType": arguments.get("entityType", "SharedSteps"),
+                "steps": selected_steps,
+                **({"parameters": arguments["parameters"]} if arguments.get("parameters") is not None else {}),
+            }
+        )
+        shared_step_id = create_result.get("entityId")
+        if not shared_step_id and isinstance(create_result.get("entity"), dict):
+            shared_step_id = create_result["entity"].get("id")
+        if not shared_step_id:
+            raise UpstreamError("Created shared step response does not include an ID.", {"operation": "create_shared_step"})
+        work_item[steps_key] = _replace_positions(
+            steps,
+            positions,
+            _shared_step_reference(str(shared_step_id), arguments.get("parameterValues")),
+        )
+        update_result = self._client.update_work_item(test_case_id, work_item)
+        return {
+            "testCaseId": test_case_id,
+            "sharedStepId": shared_step_id,
+            "replacedStepIndexes": [index + 1 for index in positions],
+            "createdSharedStep": create_result.get("entity"),
+            "entity": update_result.get("entity"),
+        }
+
+    def parameterize_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        test_case_id = _required(arguments, "testCaseId")
+        new_parameters = _required_list(arguments, "parameters")
+        allow_overwrite = bool(arguments.get("allowParameterOverwrite", False))
+        work_item = deepcopy(_work_item_entity(self._client.get_work_item(test_case_id)))
+        parameters_key = _parameters_key(work_item)
+        existing_parameters = work_item.get(parameters_key, [])
+        existing_by_name = {
+            name: parameter
+            for parameter in existing_parameters
+            if (name := _parameter_name(parameter)) is not None
+        }
+
+        merged = list(existing_parameters)
+        added_or_updated = []
+        for parameter in new_parameters:
+            name = _parameter_name(parameter)
+            if name is None:
+                raise ValidationError("Each parameter must include name.", {"field": "parameters"})
+            if name in existing_by_name:
+                if not allow_overwrite and existing_by_name[name] != parameter:
+                    raise ValidationError(
+                        "Parameter already exists with a different definition.",
+                        {"field": "parameters", "parameter": name},
+                    )
+                merged = [parameter if _parameter_name(item) == name else item for item in merged]
+            else:
+                merged.append(parameter)
+            added_or_updated.append(name)
+        work_item[parameters_key] = merged
+
+        replacement_pairs = {}
+        for replacement in arguments.get("replacements", []):
+            if not isinstance(replacement, dict):
+                raise ValidationError("replacements must contain objects.", {"field": "replacements"})
+            literal = replacement.get("value") or replacement.get("from")
+            parameter_name = replacement.get("parameterName") or replacement.get("name")
+            if literal in (None, "") or parameter_name in (None, ""):
+                raise ValidationError(
+                    "Each replacement must include value and parameterName.",
+                    {"field": "replacements"},
+                )
+            replacement_pairs[str(literal)] = "{{" + str(parameter_name) + "}}"
+        if replacement_pairs:
+            steps_key = _steps_key(work_item)
+            work_item[steps_key] = _replace_strings(work_item.get(steps_key, []), replacement_pairs)
+
+        result = self._client.update_work_item(test_case_id, work_item)
+        return {
+            "testCaseId": test_case_id,
+            "parameters": merged,
+            "changedParameters": added_or_updated,
+            "entity": result.get("entity"),
+        }
 
     def list_test_runs(self, arguments: dict[str, Any]) -> dict[str, Any]:
         return self._client.list_project_test_runs(

@@ -151,6 +151,92 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
             service.delete_test_case,
         ),
         ToolDefinition(
+            "get_test_case_steps",
+            "Get normalized steps and parameters from a test case.",
+            _schema({"testCaseId": {"type": "string"}}, ["testCaseId"]),
+            service.get_test_case_steps,
+        ),
+        ToolDefinition(
+            "search_shared_steps",
+            "Search shared steps within a project.",
+            _schema(
+                {
+                    "projectId": {"type": "string"},
+                    "page": {"type": "integer"},
+                    "pageSize": {"type": "integer"},
+                    "search": {"type": "string"},
+                    "OrderBy": {"type": "string"},
+                    "SearchField": {"type": "string"},
+                    "SearchValue": {"type": "string"},
+                },
+                ["projectId"],
+            ),
+            service.search_shared_steps,
+        ),
+        ToolDefinition(
+            "create_shared_step",
+            "Create a shared step work item.",
+            _schema(
+                {
+                    "projectId": {"type": "string"},
+                    "name": {"type": "string"},
+                    "steps": {"type": "array", "items": {"type": "object"}},
+                    "parameters": {"type": "array", "items": {"type": "object"}},
+                    "entityType": {"type": "string"},
+                },
+                ["projectId", "name", "steps"],
+                additional_properties=True,
+            ),
+            service.create_shared_step,
+        ),
+        ToolDefinition(
+            "replace_test_case_steps_with_shared_step",
+            "Replace selected test case steps with a shared step reference.",
+            _schema(
+                {
+                    "testCaseId": {"type": "string"},
+                    "sharedStepId": {"type": "string"},
+                    "stepIds": {"type": "array", "items": {"type": "string"}},
+                    "stepIndexes": {"type": "array", "items": {"type": "integer"}},
+                    "parameterValues": {"type": "object"},
+                },
+                ["testCaseId", "sharedStepId"],
+            ),
+            service.replace_test_case_steps_with_shared_step,
+        ),
+        ToolDefinition(
+            "extract_shared_step_from_test_case_steps",
+            "Create a shared step from selected test case steps and replace them in the source test case.",
+            _schema(
+                {
+                    "testCaseId": {"type": "string"},
+                    "projectId": {"type": "string"},
+                    "name": {"type": "string"},
+                    "stepIds": {"type": "array", "items": {"type": "string"}},
+                    "stepIndexes": {"type": "array", "items": {"type": "integer"}},
+                    "parameters": {"type": "array", "items": {"type": "object"}},
+                    "parameterValues": {"type": "object"},
+                    "entityType": {"type": "string"},
+                },
+                ["testCaseId", "projectId", "name"],
+            ),
+            service.extract_shared_step_from_test_case_steps,
+        ),
+        ToolDefinition(
+            "parameterize_test_case",
+            "Add or update test case parameters and optionally replace literal step text with parameter placeholders.",
+            _schema(
+                {
+                    "testCaseId": {"type": "string"},
+                    "parameters": {"type": "array", "items": {"type": "object"}},
+                    "replacements": {"type": "array", "items": {"type": "object"}},
+                    "allowParameterOverwrite": {"type": "boolean"},
+                },
+                ["testCaseId", "parameters"],
+            ),
+            service.parameterize_test_case,
+        ),
+        ToolDefinition(
             "list_test_runs",
             "List test runs for a project.",
             _schema(

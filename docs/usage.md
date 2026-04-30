@@ -190,12 +190,76 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 }
 ```
 
-### List Test Runs
+### Extract Shared Step From Test Case Steps
+
+`stepIndexes` are 1-based positions in the current test case. Use `stepIds` instead when upstream step IDs are known.
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "extract_shared_step_from_test_case_steps",
+    "arguments": {
+      "projectId": "replace-project-id",
+      "testCaseId": "replace-test-case-id",
+      "name": "Reusable login",
+      "stepIndexes": [1, 2, 3]
+    }
+  }
+}
+```
+
+### Replace Test Case Steps With Shared Step
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 9,
+  "method": "tools/call",
+  "params": {
+    "name": "replace_test_case_steps_with_shared_step",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "sharedStepId": "replace-shared-step-id",
+      "stepIds": ["replace-step-id"],
+      "parameterValues": {
+        "user": "admin"
+      }
+    }
+  }
+}
+```
+
+### Parameterize Test Case
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "parameterize_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "parameters": [
+        {"name": "user", "value": "admin"}
+      ],
+      "replacements": [
+        {"value": "admin", "parameterName": "user"}
+      ]
+    }
+  }
+}
+```
+
+### List Test Runs
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 11,
   "method": "tools/call",
   "params": {
     "name": "list_test_runs",
@@ -217,7 +281,7 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 9,
+  "id": 12,
   "method": "tools/call",
   "params": {
     "name": "list_test_results",

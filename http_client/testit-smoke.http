@@ -12,6 +12,7 @@
 @testSuiteId = {{testSuiteId}}
 @testPlanId = {{testPlanId}}
 @testCaseId = {{testCaseId}}
+@sharedStepId = {{sharedStepId}}
 @testRunId = {{testRunId}}
 @testResultId = {{testResultId}}
 
@@ -99,6 +100,34 @@ Authorization: Bearer {{token}}
 
 > {%
 client.test("test case status is 200", function() {
+  client.assert(response.status === 200, "Expected 200");
+});
+%}
+
+### Search shared steps
+POST {{baseUrl}}/api/v2/workItems/search?Skip=0&Take=10
+Accept: application/json
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectIds": ["{{projectId}}"],
+  "entityTypes": ["SharedSteps"]
+}
+
+> {%
+client.test("shared steps search status is 200", function() {
+  client.assert(response.status === 200, "Expected 200");
+});
+%}
+
+### Get shared step references
+GET {{baseUrl}}/api/v2/workItems/sharedSteps/{{sharedStepId}}/references
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {%
+client.test("shared step references status is 200", function() {
   client.assert(response.status === 200, "Expected 200");
 });
 %}
