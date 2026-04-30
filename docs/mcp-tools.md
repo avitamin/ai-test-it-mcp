@@ -48,17 +48,17 @@ For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and re
 
 ## Test Cases
 
-- `search_test_cases`: required `projectId`; optional `page`, `pageSize`, `search`, `updatedFrom`, `updatedTo`, `includeDeleted`
+- `search_test_cases`: required `projectId`; optional `page`, `pageSize`, `search`, `includeDeleted`, `OrderBy`, `SearchField`, `SearchValue`
 - `get_test_case`: required `testCaseId`
-- `create_test_case`: required `projectId`, `name`; additional Test IT fields are passed through
-- `update_test_case`: required `testCaseId`; additional Test IT fields are passed through
+- `create_test_case`: required `projectId`, `sectionId`, `name`, `state`, `priority`, `steps`; defaults `entityTypeName` to `TestCases`, `duration` to `600000`, and empty `tags`, `links`, `attributes`, `preconditionSteps`, `postconditionSteps`
+- `update_test_case`: required `testCaseId`; full Test IT update fields are passed through to `PUT /api/v2/workItems`
 - `delete_test_case`: required `testCaseId`
 - `get_test_case_steps`: required `testCaseId`
 - `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
 
-Test cases use Test IT work item endpoints upstream.
+Test cases use Test IT work item endpoints upstream. `search_test_cases` uses `POST /api/v2/projects/{projectId}/workItems/search` with `filter.types=["TestCases"]`.
 
-`get_test_case_steps` normalizes step and parameter fields from the fetched work item. `parameterize_test_case` merges parameters into the existing test case and rejects conflicting existing parameter definitions unless `allowParameterOverwrite` is true. Replacement entries use `value` and `parameterName`; matching step text is replaced with `{{parameterName}}`.
+`get_test_case_steps` normalizes step and parameter fields from the fetched work item. `parameterize_test_case` updates matching step text with `{{parameterName}}`; Test IT parameter set persistence is represented upstream by iterations and is not expanded by this tool yet.
 
 Step selectors use exactly one of:
 
@@ -68,11 +68,11 @@ Step selectors use exactly one of:
 ## Shared Steps
 
 - `search_shared_steps`: required `projectId`; optional `page`, `pageSize`, `search`, `OrderBy`, `SearchField`, `SearchValue`
-- `create_shared_step`: required `projectId`, `name`, `steps`; optional `parameters`, `entityType`; additional Test IT fields are passed through
+- `create_shared_step`: required `projectId`, `sectionId`, `name`, `state`, `priority`, `steps`; defaults `entityTypeName` to `SharedSteps`, `duration` to `0`, and empty `tags`, `links`, `attributes`, `preconditionSteps`, `postconditionSteps`
 - `replace_test_case_steps_with_shared_step`: required `testCaseId`, `sharedStepId`; plus exactly one of `stepIds` or `stepIndexes`; optional `parameterValues`
-- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `name`; plus exactly one of `stepIds` or `stepIndexes`; optional `parameters`, `parameterValues`, `entityType`
+- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `sectionId`, `name`, `state`, `priority`; plus exactly one of `stepIds` or `stepIndexes`; optional `parameterValues`, `entityTypeName`
 
-Shared step tools use Test IT work item endpoints upstream. `create_shared_step` defaults `entityType` to `SharedSteps`; override it only if your Test IT Swagger uses a different discriminator. Replacement tools fetch the current test case, update only its step list, and send the changed work item back to Test IT.
+Shared step tools use Test IT work item endpoints upstream. Shared-step references are represented in Test IT steps by `workItemId`. Replacement tools fetch the current test case, update only its step list, and send the sanitized update model back through `PUT /api/v2/workItems`.
 
 ## Test Runs
 

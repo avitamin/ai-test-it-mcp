@@ -175,7 +175,7 @@ Response guidance: state what was linked and include the parent ID and test case
 
 User asks: "Сделай из X Y Z шагов общий шаг в тест-кейсе A."
 
-Required context: confirmed `projectId`, `testCaseId`, new shared step name, and either upstream step IDs or exact 1-based step indexes from `get_test_case_steps`. Read the test case first when the user describes steps by text.
+Required context: confirmed `projectId`, `sectionId`, `testCaseId`, new shared step name, `state`, `priority`, and either upstream step IDs or exact 1-based step indexes from `get_test_case_steps`. Read the test case first when the user describes steps by text.
 
 MCP call:
 
@@ -184,8 +184,11 @@ MCP call:
   "tool": "extract_shared_step_from_test_case_steps",
   "arguments": {
     "projectId": "replace-project-id",
+    "sectionId": "replace-section-id",
     "testCaseId": "replace-test-case-id",
     "name": "replace-shared-step-name",
+    "state": "NotReady",
+    "priority": "Medium",
     "stepIndexes": [1, 2, 3]
   }
 }
@@ -207,21 +210,18 @@ MCP call:
   "arguments": {
     "testCaseId": "replace-test-case-id",
     "sharedStepId": "replace-shared-step-id",
-    "stepIndexes": [2, 3],
-    "parameterValues": {
-      "user": "admin"
-    }
+    "stepIndexes": [2, 3]
   }
 }
 ```
 
-Response guidance: state the shared step ID and replaced step indexes. Mention parameter values only when they are user-provided and non-sensitive.
+Response guidance: state the shared step ID and replaced step indexes. Test IT stores the shared-step link in the step `workItemId`; if read-back shows an empty plain step without `workItemId`, stop and report a contract problem.
 
 ### Parameterize A Test Case
 
 User asks: "Добавь параметризацию в тест-кейс."
 
-Required context: confirmed `testCaseId`, parameter names and defaults/values, and optional literal replacements in steps. First call `get_test_case_steps` when parameters need to be found, created, or clarified from existing step text.
+Required context: confirmed `testCaseId`, parameter names and defaults/values, and optional literal replacements in steps. First call `get_test_case_steps` when parameters need to be found, created, or clarified from existing step text. This tool updates step text placeholders; Test IT parameter-set persistence through iterations is not expanded yet.
 
 MCP call:
 

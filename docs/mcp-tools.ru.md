@@ -48,17 +48,17 @@ Paginated tools используют:
 
 ## Test Cases
 
-- `search_test_cases`: required `projectId`; optional `page`, `pageSize`, `search`, `updatedFrom`, `updatedTo`, `includeDeleted`
+- `search_test_cases`: required `projectId`; optional `page`, `pageSize`, `search`, `includeDeleted`, `OrderBy`, `SearchField`, `SearchValue`
 - `get_test_case`: required `testCaseId`
-- `create_test_case`: required `projectId`, `name`; additional Test IT fields are passed through
-- `update_test_case`: required `testCaseId`; additional Test IT fields are passed through
+- `create_test_case`: required `projectId`, `sectionId`, `name`, `state`, `priority`, `steps`; defaults `entityTypeName` to `TestCases`, `duration` to `600000`, and empty `tags`, `links`, `attributes`, `preconditionSteps`, `postconditionSteps`
+- `update_test_case`: required `testCaseId`; full Test IT update fields are passed through to `PUT /api/v2/workItems`
 - `delete_test_case`: required `testCaseId`
 - `get_test_case_steps`: required `testCaseId`
 - `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
 
-Test cases используют upstream Test IT work item endpoints.
+Test cases используют upstream Test IT work item endpoints. `search_test_cases` использует `POST /api/v2/projects/{projectId}/workItems/search` с `filter.types=["TestCases"]`.
 
-`get_test_case_steps` нормализует поля шагов и параметров из полученного work item. `parameterize_test_case` добавляет параметры в существующий test case и отклоняет конфликтующие определения существующих параметров, если `allowParameterOverwrite` не равен true. Элементы `replacements` используют `value` и `parameterName`; найденный текст шага заменяется на `{{parameterName}}`.
+`get_test_case_steps` нормализует поля шагов и параметров из полученного work item. `parameterize_test_case` обновляет найденный текст шага на `{{parameterName}}`; сохранение наборов параметров в Test IT upstream представлено через iterations и пока не раскрыто этим tool.
 
 Selectors шагов используют ровно одно поле:
 
@@ -68,11 +68,11 @@ Selectors шагов используют ровно одно поле:
 ## Shared Steps
 
 - `search_shared_steps`: required `projectId`; optional `page`, `pageSize`, `search`, `OrderBy`, `SearchField`, `SearchValue`
-- `create_shared_step`: required `projectId`, `name`, `steps`; optional `parameters`, `entityType`; additional Test IT fields are passed through
+- `create_shared_step`: required `projectId`, `sectionId`, `name`, `state`, `priority`, `steps`; defaults `entityTypeName` to `SharedSteps`, `duration` to `0`, and empty `tags`, `links`, `attributes`, `preconditionSteps`, `postconditionSteps`
 - `replace_test_case_steps_with_shared_step`: required `testCaseId`, `sharedStepId`; plus exactly one of `stepIds` или `stepIndexes`; optional `parameterValues`
-- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `name`; plus exactly one of `stepIds` или `stepIndexes`; optional `parameters`, `parameterValues`, `entityType`
+- `extract_shared_step_from_test_case_steps`: required `testCaseId`, `projectId`, `sectionId`, `name`, `state`, `priority`; plus exactly one of `stepIds` или `stepIndexes`; optional `parameterValues`, `entityTypeName`
 
-Shared step tools используют upstream Test IT work item endpoints. `create_shared_step` по умолчанию отправляет `entityType` как `SharedSteps`; переопределяйте его только если Swagger вашей Test IT инсталляции использует другой discriminator. Replacement tools читают текущий test case, меняют только список шагов и отправляют измененный work item обратно в Test IT.
+Shared step tools используют upstream Test IT work item endpoints. Shared-step references представлены в шагах Test IT через `workItemId`. Replacement tools читают текущий test case, меняют только список шагов и отправляют sanitized update model через `PUT /api/v2/workItems`.
 
 ## Test Runs
 

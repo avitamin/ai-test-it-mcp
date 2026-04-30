@@ -56,11 +56,23 @@ class FakeClient:
             "entity": {
                 "id": work_item_id,
                 "name": "Case",
+                "sectionId": "section-1",
+                "description": "",
+                "state": "NotReady",
+                "priority": "Medium",
+                "sourceType": "Manual",
+                "duration": 600000,
+                "attributes": {},
+                "tags": [],
+                "links": [],
+                "attachments": [],
                 "steps": [
-                    {"id": "s1", "action": "Open login page"},
-                    {"id": "s2", "action": "Enter user"},
-                    {"id": "s3", "action": "Submit"},
+                    {"id": "s1", "action": "Open login page", "expected": "", "testData": "", "comments": "", "workItemId": None},
+                    {"id": "s2", "action": "Enter user", "expected": "", "testData": "", "comments": "", "workItemId": None},
+                    {"id": "s3", "action": "Submit", "expected": "", "testData": "", "comments": "", "workItemId": None},
                 ],
+                "preconditionSteps": [],
+                "postconditionSteps": [],
                 "parameters": [{"name": "existing", "value": "ok"}],
             }
         }
@@ -95,6 +107,17 @@ class ServiceTests(unittest.TestCase):
         service = TestItService(FakeClient())
         with self.assertRaises(ValidationError):
             service.search_test_cases({})
+
+    def test_search_test_cases_uses_project_scoped_work_item_search(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        service.search_test_cases({"projectId": "p1", "search": "login", "pageSize": 5})
+        call = client.calls[0]
+        self.assertEqual(call[0], "search_work_items")
+        self.assertEqual(call[1]["project_id"], "p1")
+        self.assertEqual(call[1]["body"]["filter"]["projectIds"], ["p1"])
+        self.assertEqual(call[1]["body"]["filter"]["types"], ["TestCases"])
+        self.assertEqual(call[1]["body"]["filter"]["nameOrId"], "login")
 
     def test_list_test_suites_requires_test_plan(self) -> None:
         service = TestItService(FakeClient())
@@ -135,9 +158,10 @@ class ServiceTests(unittest.TestCase):
         service.search_shared_steps({"projectId": "p1", "search": "login", "pageSize": 5})
         call = client.calls[0]
         self.assertEqual(call[0], "search_work_items")
-        self.assertEqual(call[1]["body"]["projectIds"], ["p1"])
-        self.assertEqual(call[1]["body"]["entityTypes"], ["SharedSteps"])
-        self.assertEqual(call[1]["body"]["search"], "login")
+        self.assertEqual(call[1]["project_id"], "p1")
+        self.assertEqual(call[1]["body"]["filter"]["projectIds"], ["p1"])
+        self.assertEqual(call[1]["body"]["filter"]["types"], ["SharedSteps"])
+        self.assertEqual(call[1]["body"]["filter"]["nameOrId"], "login")
         self.assertEqual(call[1]["pagination"].page_size, 5)
 
     def test_replace_test_case_steps_with_shared_step_uses_one_based_indexes(self) -> None:
@@ -154,8 +178,10 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(result["replacedStepIndexes"], [2, 3])
         update_call = client.calls[-1]
         self.assertEqual(update_call[0], "update_work_item")
-        self.assertEqual(update_call[2]["steps"][1]["sharedStepId"], "shared-1")
-        self.assertEqual(update_call[2]["steps"][1]["parameters"]["user"], "admin")
+        self.assertEqual(update_call[2]["steps"][1]["id"], "s2")
+        self.assertEqual(update_call[2]["steps"][1]["workItemId"], "shared-1")
+        self.assertNotIn("sharedStepId", update_call[2]["steps"][1])
+        self.assertNotIn("type", update_call[2]["steps"][1])
         self.assertEqual(len(update_call[2]["steps"]), 2)
 
     def test_replace_test_case_steps_requires_exactly_one_selector(self) -> None:
@@ -169,14 +195,28 @@ class ServiceTests(unittest.TestCase):
         client = FakeClient()
         service = TestItService(client)
         result = service.extract_shared_step_from_test_case_steps(
-            {"testCaseId": "tc1", "projectId": "p1", "name": "Login", "stepIds": ["s1", "s2"]}
+            {
+                "testCaseId": "tc1",
+                "projectId": "p1",
+                "sectionId": "section-1",
+                "name": "Login",
+                "state": "NotReady",
+                "priority": "Medium",
+                "stepIds": ["s1", "s2"],
+            }
         )
         self.assertEqual(result["sharedStepId"], "shared-1")
         create_call = client.calls[1]
         self.assertEqual(create_call[0], "create_shared_step")
-        self.assertEqual([step["id"] for step in create_call[1]["steps"]], ["s1", "s2"])
+        self.assertEqual([step["action"] for step in create_call[1]["steps"]], ["Open login page", "Enter user"])
+        self.assertNotIn("id", create_call[1]["steps"][0])
+        self.assertEqual(create_call[1]["sectionId"], "section-1")
+        self.assertEqual(create_call[1]["state"], "NotReady")
+        self.assertEqual(create_call[1]["priority"], "Medium")
+        self.assertEqual(create_call[1]["entityTypeName"], "SharedSteps")
+        self.assertEqual(create_call[1]["duration"], 0)
         update_call = client.calls[2]
-        self.assertEqual(update_call[2]["steps"][0]["sharedStepId"], "shared-1")
+        self.assertEqual(update_call[2]["steps"][0]["workItemId"], "shared-1")
         self.assertEqual(update_call[2]["steps"][1]["id"], "s3")
 
     def test_parameterize_test_case_rejects_conflicting_parameter(self) -> None:
@@ -198,5 +238,4 @@ class ServiceTests(unittest.TestCase):
         )
         self.assertEqual(result["changedParameters"], ["user"])
         update_call = client.calls[-1]
-        self.assertEqual(update_call[2]["parameters"][-1]["name"], "user")
         self.assertEqual(update_call[2]["steps"][1]["action"], "Enter {{user}}")

@@ -106,14 +106,17 @@ client.test("test case status is 200", function() {
 %}
 
 ### Search shared steps
-POST {{baseUrl}}/api/v2/workItems/search?Skip=0&Take=10
+POST {{baseUrl}}/api/v2/projects/{{projectId}}/workItems/search?Skip=0&Take=10
 Accept: application/json
 Authorization: PrivateToken {{token}}
 Content-Type: application/json
 
 {
-  "projectIds": ["{{projectId}}"],
-  "entityTypes": ["SharedSteps"]
+  "filter": {
+    "projectIds": ["{{projectId}}"],
+    "types": ["SharedSteps"],
+    "isDeleted": false
+  }
 }
 
 > {%

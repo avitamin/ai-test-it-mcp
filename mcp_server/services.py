@@ -68,6 +68,19 @@ def _step_id(step: Any) -> str | None:
     return str(value) if value not in (None, "") else None
 
 
+def _step_payload(step: dict[str, Any], *, include_id: bool) -> dict[str, Any]:
+    payload = {
+        "action": step.get("action"),
+        "expected": step.get("expected"),
+        "testData": step.get("testData"),
+        "comments": step.get("comments"),
+        "workItemId": step.get("workItemId"),
+    }
+    if include_id:
+        payload["id"] = _step_id(step)
+    return payload
+
+
 def _selected_step_positions(steps: list[Any], arguments: dict[str, Any]) -> list[int]:
     has_ids = arguments.get("stepIds") is not None
     has_indexes = arguments.get("stepIndexes") is not None
@@ -97,14 +110,20 @@ def _selected_step_positions(steps: list[Any], arguments: dict[str, Any]) -> lis
     return sorted(positions)
 
 
-def _shared_step_reference(shared_step_id: str, parameter_values: dict[str, Any] | None = None) -> dict[str, Any]:
-    reference = {
-        "type": "shared_step",
-        "sharedStepId": shared_step_id,
+def _shared_step_reference(shared_step_id: str, source_step: Any) -> dict[str, Any]:
+    if not isinstance(source_step, dict):
+        raise ValidationError("Selected step must be an object.", {"field": "steps"})
+    step_id = _step_id(source_step)
+    if step_id is None:
+        raise ValidationError("Selected step must include id for update.", {"field": "steps"})
+    return {
+        "id": step_id,
+        "action": "",
+        "expected": "",
+        "testData": "",
+        "comments": "",
+        "workItemId": shared_step_id,
     }
-    if parameter_values:
-        reference["parameters"] = parameter_values
-    return reference
 
 
 def _replace_positions(steps: list[Any], positions: list[int], replacement: dict[str, Any]) -> list[Any]:
@@ -117,6 +136,64 @@ def _replace_positions(steps: list[Any], positions: list[int], replacement: dict
         if index not in selected:
             updated.append(step)
     return updated
+
+
+def _update_work_item_payload(work_item: dict[str, Any], work_item_id: str) -> dict[str, Any]:
+    payload = {
+        "id": work_item_id,
+        "sectionId": work_item.get("sectionId"),
+        "description": work_item.get("description"),
+        "state": work_item.get("state"),
+        "priority": work_item.get("priority"),
+        "sourceType": work_item.get("sourceType"),
+        "steps": [_step_payload(step, include_id=True) for step in work_item.get("steps", [])],
+        "preconditionSteps": [
+            _step_payload(step, include_id=True)
+            for step in work_item.get("preconditionSteps", [])
+        ],
+        "postconditionSteps": [
+            _step_payload(step, include_id=True)
+            for step in work_item.get("postconditionSteps", [])
+        ],
+        "duration": work_item.get("duration"),
+        "attributes": work_item.get("attributes", {}),
+        "tags": work_item.get("tags", []),
+        "links": work_item.get("links", []),
+        "name": work_item.get("name"),
+        "attachments": work_item.get("attachments", []),
+    }
+    if work_item.get("iterations") is not None:
+        payload["iterations"] = work_item["iterations"]
+    if work_item.get("autoTests") is not None:
+        payload["autoTests"] = work_item["autoTests"]
+    return payload
+
+
+def _create_work_item_payload(arguments: dict[str, Any], *, entity_type: str, duration: int) -> dict[str, Any]:
+    payload = dict(arguments)
+    payload["entityTypeName"] = payload.pop("entityType", payload.get("entityTypeName", entity_type))
+    payload.pop("parameters", None)
+    payload.setdefault("duration", duration)
+    payload.setdefault("tags", [])
+    payload.setdefault("links", [])
+    payload.setdefault("attributes", {})
+    payload.setdefault("preconditionSteps", [])
+    payload.setdefault("postconditionSteps", [])
+    return payload
+
+
+def _work_item_search_body(project_id: str, entity_type: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "filter": {
+            "projectIds": [project_id],
+            "types": [entity_type],
+            "isDeleted": arguments.get("includeDeleted", False),
+        }
+    }
+    search = arguments.get("search")
+    if search not in (None, ""):
+        body["filter"]["nameOrId"] = search
+    return body
 
 
 def _parameter_name(parameter: Any) -> str | None:
@@ -183,26 +260,30 @@ class TestItService:
         return self._client.update_entity("test_plan", test_plan_id, payload)
 
     def search_test_cases(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.list_entities(
-            "test_case",
-            project_id=_required(arguments, "projectId"),
+        project_id = _required(arguments, "projectId")
+        return self._client.search_work_items(
+            project_id=project_id,
             pagination=_pagination(arguments),
             filters=_optional_filters(
                 arguments,
-                ["search", "updatedFrom", "updatedTo", "includeDeleted"],
+                ["OrderBy", "SearchField", "SearchValue"],
             ),
+            body=_work_item_search_body(project_id, "TestCases", arguments),
         )
 
     def get_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         return self._client.get_entity("test_case", _required(arguments, "testCaseId"))
 
     def create_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        return self._client.create_entity("test_case", arguments)
+        return self._client.create_entity(
+            "test_case",
+            _create_work_item_payload(arguments, entity_type="TestCases", duration=600000),
+        )
 
     def update_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_case_id = _required(arguments, "testCaseId")
         payload = {key: value for key, value in arguments.items() if key != "testCaseId"}
-        return self._client.update_entity("test_case", test_case_id, payload)
+        return self._client.update_work_item(test_case_id, payload)
 
     def delete_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         return self._client.delete_entity("test_case", _required(arguments, "testCaseId"))
@@ -224,33 +305,21 @@ class TestItService:
 
     def search_shared_steps(self, arguments: dict[str, Any]) -> dict[str, Any]:
         project_id = _required(arguments, "projectId")
-        body = {
-            "projectIds": [project_id],
-            "entityTypes": ["SharedSteps"],
-        }
-        if arguments.get("search") is not None:
-            body["search"] = arguments["search"]
         return self._client.search_work_items(
+            project_id=project_id,
             pagination=_pagination(arguments),
             filters=_optional_filters(arguments, ["OrderBy", "SearchField", "SearchValue"]),
-            body=body,
+            body=_work_item_search_body(project_id, "SharedSteps", arguments),
         )
 
     def create_shared_step(self, arguments: dict[str, Any]) -> dict[str, Any]:
         project_id = _required(arguments, "projectId")
         name = _required(arguments, "name")
         steps = _required_list(arguments, "steps")
-        payload = {
-            "projectId": project_id,
-            "name": name,
-            "entityType": arguments.get("entityType", "SharedSteps"),
-            "steps": steps,
-        }
-        if arguments.get("parameters") is not None:
-            payload["parameters"] = arguments["parameters"]
-        for key, value in arguments.items():
-            if key not in payload and key not in {"projectId", "name", "steps", "parameters", "entityType"}:
-                payload[key] = value
+        payload = _create_work_item_payload(arguments, entity_type="SharedSteps", duration=0)
+        payload["projectId"] = project_id
+        payload["name"] = name
+        payload["steps"] = [_step_payload(step, include_id=False) for step in steps]
         return self._client.create_shared_step(payload)
 
     def replace_test_case_steps_with_shared_step(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -260,9 +329,12 @@ class TestItService:
         steps_key = _steps_key(work_item)
         steps = work_item.get(steps_key, [])
         positions = _selected_step_positions(steps, arguments)
-        replacement = _shared_step_reference(shared_step_id, arguments.get("parameterValues"))
+        replacement = _shared_step_reference(shared_step_id, steps[positions[0]])
         work_item[steps_key] = _replace_positions(steps, positions, replacement)
-        result = self._client.update_work_item(test_case_id, work_item)
+        result = self._client.update_work_item(
+            test_case_id,
+            _update_work_item_payload(work_item, test_case_id),
+        )
         return {
             "testCaseId": test_case_id,
             "sharedStepId": shared_step_id,
@@ -278,15 +350,29 @@ class TestItService:
         steps_key = _steps_key(work_item)
         steps = work_item.get(steps_key, [])
         positions = _selected_step_positions(steps, arguments)
-        selected_steps = [deepcopy(steps[index]) for index in positions]
+        selected_steps = [_step_payload(deepcopy(steps[index]), include_id=False) for index in positions]
         create_result = self._client.create_shared_step(
-            {
-                "projectId": project_id,
-                "name": name,
-                "entityType": arguments.get("entityType", "SharedSteps"),
-                "steps": selected_steps,
-                **({"parameters": arguments["parameters"]} if arguments.get("parameters") is not None else {}),
-            }
+            _create_work_item_payload(
+                {
+                    key: value
+                    for key, value in arguments.items()
+                    if key
+                    not in {
+                        "testCaseId",
+                        "stepIds",
+                        "stepIndexes",
+                        "parameterValues",
+                        "parameters",
+                    }
+                } | {
+                    "projectId": project_id,
+                    "name": name,
+                    "entityTypeName": arguments.get("entityTypeName", arguments.get("entityType", "SharedSteps")),
+                    "steps": selected_steps,
+                },
+                entity_type="SharedSteps",
+                duration=0,
+            )
         )
         shared_step_id = create_result.get("entityId")
         if not shared_step_id and isinstance(create_result.get("entity"), dict):
@@ -296,9 +382,12 @@ class TestItService:
         work_item[steps_key] = _replace_positions(
             steps,
             positions,
-            _shared_step_reference(str(shared_step_id), arguments.get("parameterValues")),
+            _shared_step_reference(str(shared_step_id), steps[positions[0]]),
         )
-        update_result = self._client.update_work_item(test_case_id, work_item)
+        update_result = self._client.update_work_item(
+            test_case_id,
+            _update_work_item_payload(work_item, test_case_id),
+        )
         return {
             "testCaseId": test_case_id,
             "sharedStepId": shared_step_id,
@@ -354,7 +443,10 @@ class TestItService:
             steps_key = _steps_key(work_item)
             work_item[steps_key] = _replace_strings(work_item.get(steps_key, []), replacement_pairs)
 
-        result = self._client.update_work_item(test_case_id, work_item)
+        result = self._client.update_work_item(
+            test_case_id,
+            _update_work_item_payload(work_item, test_case_id),
+        )
         return {
             "testCaseId": test_case_id,
             "parameters": merged,

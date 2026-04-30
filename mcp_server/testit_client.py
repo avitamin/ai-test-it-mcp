@@ -241,6 +241,7 @@ class TestItClient:
     def search_work_items(
         self,
         *,
+        project_id: str | None = None,
         pagination: PaginationInput | None = None,
         filters: dict[str, Any] | None = None,
         body: dict[str, Any] | None = None,
@@ -252,9 +253,12 @@ class TestItClient:
         }
         if filters:
             query.update(filters)
+        path = "/api/v2/workItems/search"
+        if project_id:
+            path = f"/api/v2/projects/{project_id}/workItems/search"
         payload = self._request(
             "POST",
-            "/api/v2/workItems/search",
+            path,
             operation="search_work_items",
             entity="workItems",
             query=query,
@@ -294,6 +298,8 @@ class TestItClient:
         return {"entity": payload, "entityId": created_id}
 
     def update_entity(self, entity: str, entity_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        if entity == "test_case":
+            return self.update_work_item(entity_id, data)
         route = self._entity_route(entity)
         payload = self._request(
             "PUT",

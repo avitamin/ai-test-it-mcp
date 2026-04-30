@@ -48,17 +48,17 @@ class TestItClientTests(unittest.TestCase):
         request = urlopen.call_args.args[0]
         self.assertEqual(request.get_header("Authorization"), "Bearer secret")
 
-    def test_search_work_items_posts_body_and_pagination(self) -> None:
+    def test_search_work_items_posts_project_scoped_body_and_pagination(self) -> None:
         settings = Settings(base_url="https://demo.testit.software", token="secret")
         client = TestItClient(settings)
 
         with patch("urllib.request.urlopen", return_value=FakeResponse(b'{"items": [], "total": 0}')) as urlopen:
-            result = client.search_work_items(body={"projectIds": ["p1"]})
+            result = client.search_work_items(project_id="p1", body={"filter": {"types": ["TestCases"]}})
 
         request = urlopen.call_args.args[0]
         self.assertEqual(request.method, "POST")
-        self.assertEqual(request.full_url, "https://demo.testit.software/api/v2/workItems/search?Skip=0&Take=20")
-        self.assertEqual(request.data, b'{"projectIds": ["p1"]}')
+        self.assertEqual(request.full_url, "https://demo.testit.software/api/v2/projects/p1/workItems/search?Skip=0&Take=20")
+        self.assertEqual(request.data, b'{"filter": {"types": ["TestCases"]}}')
         self.assertEqual(result["items"], [])
 
     def test_create_shared_step_posts_work_item(self) -> None:

@@ -203,8 +203,11 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
     "name": "extract_shared_step_from_test_case_steps",
     "arguments": {
       "projectId": "replace-project-id",
+      "sectionId": "replace-section-id",
       "testCaseId": "replace-test-case-id",
       "name": "Reusable login",
+      "state": "NotReady",
+      "priority": "Medium",
       "stepIndexes": [1, 2, 3]
     }
   }
@@ -223,10 +226,7 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
     "arguments": {
       "testCaseId": "replace-test-case-id",
       "sharedStepId": "replace-shared-step-id",
-      "stepIds": ["replace-step-id"],
-      "parameterValues": {
-        "user": "admin"
-      }
+      "stepIds": ["replace-step-id"]
     }
   }
 }
