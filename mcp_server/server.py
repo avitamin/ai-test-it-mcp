@@ -242,15 +242,16 @@ def build_tools(service: TestItService) -> list[ToolDefinition]:
         ),
         ToolDefinition(
             "parameterize_test_case",
-            "Add or update test case parameters and optionally replace literal step text with parameter placeholders.",
+            "Assign existing Test IT parameters to test case iterations and optionally replace literal step text with parameter placeholders.",
             _schema(
                 {
                     "testCaseId": {"type": "string"},
+                    "projectId": {"type": "string"},
                     "parameters": {"type": "array", "items": {"type": "object"}},
+                    "iterations": {"type": "array", "items": {"type": "object"}},
                     "replacements": {"type": "array", "items": {"type": "object"}},
-                    "allowParameterOverwrite": {"type": "boolean"},
                 },
-                ["testCaseId", "parameters"],
+                ["testCaseId", "projectId"],
             ),
             service.parameterize_test_case,
         ),

@@ -54,13 +54,6 @@ def _steps_key(work_item: dict[str, Any]) -> str:
     return "steps"
 
 
-def _parameters_key(work_item: dict[str, Any]) -> str:
-    for key in ("parameters", "testParameters"):
-        if isinstance(work_item.get(key), list):
-            return key
-    return "parameters"
-
-
 def _step_id(step: Any) -> str | None:
     if not isinstance(step, dict):
         return None
@@ -196,13 +189,6 @@ def _work_item_search_body(project_id: str, entity_type: str, arguments: dict[st
     return body
 
 
-def _parameter_name(parameter: Any) -> str | None:
-    if not isinstance(parameter, dict):
-        return None
-    value = parameter.get("name") or parameter.get("key")
-    return str(value) if value not in (None, "") else None
-
-
 def _replace_strings(value: Any, replacements: dict[str, str]) -> Any:
     if isinstance(value, str):
         updated = value
@@ -214,6 +200,70 @@ def _replace_strings(value: Any, replacements: dict[str, str]) -> Any:
     if isinstance(value, dict):
         return {key: _replace_strings(item, replacements) for key, item in value.items()}
     return value
+
+
+def _parameter_name_value(parameter: Any, field: str) -> tuple[str, str]:
+    if not isinstance(parameter, dict):
+        raise ValidationError(f"{field} must contain objects.", {"field": field})
+    name = parameter.get("name") or parameter.get("key")
+    value = parameter.get("value")
+    if name in (None, "") or value is None:
+        raise ValidationError(
+            "Each parameter must include name and value.",
+            {"field": field},
+        )
+    return str(name), str(value)
+
+
+def _parameter_iterations(arguments: dict[str, Any]) -> list[dict[str, list[dict[str, str]]]]:
+    has_parameters = arguments.get("parameters") is not None
+    has_iterations = arguments.get("iterations") is not None
+    if has_parameters == has_iterations:
+        raise ValidationError(
+            "Provide exactly one of parameters or iterations.",
+            {"fields": ["parameters", "iterations"]},
+        )
+
+    if has_parameters:
+        parameters = [
+            {"name": name, "value": value}
+            for name, value in (
+                _parameter_name_value(parameter, "parameters")
+                for parameter in _required_list(arguments, "parameters")
+            )
+        ]
+        return [{"parameters": parameters}]
+
+    normalized = []
+    for index, iteration in enumerate(_required_list(arguments, "iterations")):
+        if not isinstance(iteration, dict):
+            raise ValidationError("iterations must contain objects.", {"field": "iterations"})
+        parameters = iteration.get("parameters")
+        if not isinstance(parameters, list) or not parameters:
+            raise ValidationError(
+                "Each iteration must include a non-empty parameters array.",
+                {"field": "iterations", "iterationIndex": index + 1},
+            )
+        normalized.append(
+            {
+                "parameters": [
+                    {"name": name, "value": value}
+                    for name, value in (
+                        _parameter_name_value(parameter, "iterations.parameters")
+                        for parameter in parameters
+                    )
+                ]
+            }
+        )
+    return normalized
+
+
+def _parameter_search_body(project_id: str, name: str) -> dict[str, Any]:
+    return {"name": name, "isDeleted": False, "projectIds": [project_id]}
+
+
+def _parameter_identity(parameter: dict[str, str]) -> str:
+    return f"{parameter['name']}\0{parameter['value']}"
 
 
 class TestItService:
@@ -292,15 +342,13 @@ class TestItService:
         test_case_id = _required(arguments, "testCaseId")
         work_item = _work_item_entity(self._client.get_work_item(test_case_id))
         steps_key = _steps_key(work_item)
-        parameters_key = _parameters_key(work_item)
         steps = work_item.get(steps_key, [])
-        parameters = work_item.get(parameters_key, [])
+        iterations = work_item.get("iterations", [])
         return {
             "testCaseId": test_case_id,
             "steps": steps,
-            "parameters": parameters,
+            "iterations": iterations,
             "stepsField": steps_key,
-            "parametersField": parameters_key,
         }
 
     def search_shared_steps(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -398,34 +446,62 @@ class TestItService:
 
     def parameterize_test_case(self, arguments: dict[str, Any]) -> dict[str, Any]:
         test_case_id = _required(arguments, "testCaseId")
-        new_parameters = _required_list(arguments, "parameters")
-        allow_overwrite = bool(arguments.get("allowParameterOverwrite", False))
+        project_id = _required(arguments, "projectId")
+        requested_iterations = _parameter_iterations(arguments)
         work_item = deepcopy(_work_item_entity(self._client.get_work_item(test_case_id)))
-        parameters_key = _parameters_key(work_item)
-        existing_parameters = work_item.get(parameters_key, [])
-        existing_by_name = {
-            name: parameter
-            for parameter in existing_parameters
-            if (name := _parameter_name(parameter)) is not None
-        }
 
-        merged = list(existing_parameters)
-        added_or_updated = []
-        for parameter in new_parameters:
-            name = _parameter_name(parameter)
-            if name is None:
-                raise ValidationError("Each parameter must include name.", {"field": "parameters"})
-            if name in existing_by_name:
-                if not allow_overwrite and existing_by_name[name] != parameter:
-                    raise ValidationError(
-                        "Parameter already exists with a different definition.",
-                        {"field": "parameters", "parameter": name},
-                    )
-                merged = [parameter if _parameter_name(item) == name else item for item in merged]
+        unique_parameters = {
+            _parameter_identity(parameter): parameter
+            for iteration in requested_iterations
+            for parameter in iteration["parameters"]
+        }
+        resolved_by_identity: dict[str, dict[str, Any]] = {}
+        missing = []
+        for identity, parameter in unique_parameters.items():
+            page = 1
+            match = None
+            while match is None:
+                search_result = self._client.search_parameters(
+                    pagination=PaginationInput(page=page, page_size=100),
+                    body=_parameter_search_body(project_id, parameter["name"]),
+                )
+                items = search_result.get("items", [])
+                match = next(
+                    (
+                        item
+                        for item in items
+                        if isinstance(item, dict)
+                        and item.get("name") == parameter["name"]
+                        and str(item.get("value")) == parameter["value"]
+                        and item.get("id") not in (None, "")
+                    ),
+                    None,
+                )
+                if match is not None or not search_result.get("nextPage"):
+                    break
+                page += 1
+            if match is None:
+                missing.append(parameter)
             else:
-                merged.append(parameter)
-            added_or_updated.append(name)
-        work_item[parameters_key] = merged
+                resolved_by_identity[identity] = match
+
+        if missing:
+            raise ValidationError(
+                "Some parameters were not found. Create them in Test IT before parameterizing the test case.",
+                {"field": "parameters", "missingParameters": missing},
+            )
+
+        assigned_iterations = []
+        for iteration in requested_iterations:
+            assigned_iterations.append(
+                {
+                    "parameters": [
+                        {"id": resolved_by_identity[_parameter_identity(parameter)]["id"]}
+                        for parameter in iteration["parameters"]
+                    ],
+                }
+            )
+        work_item["iterations"] = assigned_iterations
 
         replacement_pairs = {}
         for replacement in arguments.get("replacements", []):
@@ -447,10 +523,20 @@ class TestItService:
             test_case_id,
             _update_work_item_payload(work_item, test_case_id),
         )
+        changed_parameters = sorted({parameter["name"] for parameter in unique_parameters.values()})
+        reused_parameters = [
+            {
+                "id": resolved["id"],
+                "name": resolved.get("name"),
+                "value": resolved.get("value"),
+            }
+            for resolved in resolved_by_identity.values()
+        ]
         return {
             "testCaseId": test_case_id,
-            "parameters": merged,
-            "changedParameters": added_or_updated,
+            "changedParameters": changed_parameters,
+            "reusedParameters": reused_parameters,
+            "iterations": assigned_iterations,
             "entity": result.get("entity"),
         }
 

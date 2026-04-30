@@ -243,6 +243,7 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
     "name": "parameterize_test_case",
     "arguments": {
       "testCaseId": "replace-test-case-id",
+      "projectId": "project-id",
       "parameters": [
         {"name": "user", "value": "admin"}
       ],
@@ -253,6 +254,19 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
   }
 }
 ```
+
+`parameters` - короткая форма для одной iteration Test IT. Для нескольких наборов данных передайте `iterations`:
+
+```json
+{
+  "iterations": [
+    {"parameters": [{"name": "user", "value": "admin"}]},
+    {"parameters": [{"name": "user", "value": "viewer"}]}
+  ]
+}
+```
+
+Указанные параметры уже должны существовать в Test IT для проекта. Tool не создает записи справочника параметров.
 
 ### List Test Runs
 

@@ -61,6 +61,19 @@ class TestItClientTests(unittest.TestCase):
         self.assertEqual(request.data, b'{"filter": {"types": ["TestCases"]}}')
         self.assertEqual(result["items"], [])
 
+    def test_search_parameters_posts_body_and_pagination(self) -> None:
+        settings = Settings(base_url="https://demo.testit.software", token="secret")
+        client = TestItClient(settings)
+
+        with patch("urllib.request.urlopen", return_value=FakeResponse(b'{"items": [], "total": 0}')) as urlopen:
+            result = client.search_parameters(body={"name": "user", "isDeleted": False, "projectIds": ["p1"]})
+
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.method, "POST")
+        self.assertEqual(request.full_url, "https://demo.testit.software/api/v2/parameters/search?Skip=0&Take=20")
+        self.assertEqual(request.data, b'{"name": "user", "isDeleted": false, "projectIds": ["p1"]}')
+        self.assertEqual(result["items"], [])
+
     def test_create_shared_step_posts_work_item(self) -> None:
         settings = Settings(base_url="https://demo.testit.software", token="secret")
         client = TestItClient(settings)

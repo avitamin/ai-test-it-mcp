@@ -243,6 +243,7 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
     "name": "parameterize_test_case",
     "arguments": {
       "testCaseId": "replace-test-case-id",
+      "projectId": "project-id",
       "parameters": [
         {"name": "user", "value": "admin"}
       ],
@@ -253,6 +254,19 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
   }
 }
 ```
+
+`parameters` is the short form for one Test IT iteration. For multiple data sets, pass `iterations` instead:
+
+```json
+{
+  "iterations": [
+    {"parameters": [{"name": "user", "value": "admin"}]},
+    {"parameters": [{"name": "user", "value": "viewer"}]}
+  ]
+}
+```
+
+The referenced parameters must already exist in Test IT for the project. The tool does not create parameter dictionary entries.
 
 ### List Test Runs
 

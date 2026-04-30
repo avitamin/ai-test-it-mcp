@@ -272,6 +272,36 @@ class TestItClient:
             total,
         )
 
+    def search_parameters(
+        self,
+        *,
+        pagination: PaginationInput | None = None,
+        filters: dict[str, Any] | None = None,
+        body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        resolved_pagination = pagination or PaginationInput()
+        query = {
+            "Skip": (resolved_pagination.page - 1) * resolved_pagination.page_size,
+            "Take": resolved_pagination.page_size,
+        }
+        if filters:
+            query.update(filters)
+        payload = self._request(
+            "POST",
+            "/api/v2/parameters/search",
+            operation="search_parameters",
+            entity="parameters",
+            query=query,
+            body=body or {},
+        )
+        items, total = self._extract_items(payload)
+        return paginated_from_upstream(
+            items,
+            resolved_pagination.page,
+            resolved_pagination.page_size,
+            total,
+        )
+
     def get_entity(self, entity: str, entity_id: str) -> dict[str, Any]:
         route = self._entity_route(entity)
         payload = self._request(

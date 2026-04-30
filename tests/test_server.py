@@ -101,3 +101,11 @@ class ProtocolTests(unittest.TestCase):
             by_name["replace_test_case_steps_with_shared_step"].input_schema["required"],
             ["testCaseId", "sharedStepId"],
         )
+        self.assertEqual(
+            by_name["parameterize_test_case"].input_schema["required"],
+            ["testCaseId", "projectId"],
+        )
+        self.assertNotIn(
+            "allowParameterOverwrite",
+            by_name["parameterize_test_case"].input_schema["properties"],
+        )

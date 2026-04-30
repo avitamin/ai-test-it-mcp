@@ -54,11 +54,11 @@ Paginated tools используют:
 - `update_test_case`: required `testCaseId`; full Test IT update fields are passed through to `PUT /api/v2/workItems`
 - `delete_test_case`: required `testCaseId`
 - `get_test_case_steps`: required `testCaseId`
-- `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
+- `parameterize_test_case`: required `testCaseId`, `projectId` и ровно одно из `parameters` или `iterations`; optional `replacements`
 
 Test cases используют upstream Test IT work item endpoints. `search_test_cases` использует `POST /api/v2/projects/{projectId}/workItems/search` с `filter.types=["TestCases"]`.
 
-`get_test_case_steps` нормализует поля шагов и параметров из полученного work item. `parameterize_test_case` обновляет найденный текст шага на `{{parameterName}}`; сохранение наборов параметров в Test IT upstream представлено через iterations и пока не раскрыто этим tool.
+`get_test_case_steps` нормализует поля шагов и возвращает upstream `iterations` из полученного work item. `parameterize_test_case` использует только существующие параметры Test IT: ищет параметры по `projectId`, `name` и `value`, записывает найденные IDs в work item `iterations` и обновляет найденный текст шага на `{{parameterName}}`. Tool не создает и не обновляет записи справочника параметров.
 
 Selectors шагов используют ровно одно поле:
 

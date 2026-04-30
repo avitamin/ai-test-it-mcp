@@ -54,11 +54,11 @@ For non-paginated upstream endpoints, `page` and `pageSize` are synthetic and re
 - `update_test_case`: required `testCaseId`; full Test IT update fields are passed through to `PUT /api/v2/workItems`
 - `delete_test_case`: required `testCaseId`
 - `get_test_case_steps`: required `testCaseId`
-- `parameterize_test_case`: required `testCaseId`, `parameters`; optional `replacements`, `allowParameterOverwrite`
+- `parameterize_test_case`: required `testCaseId`, `projectId`, and exactly one of `parameters` or `iterations`; optional `replacements`
 
 Test cases use Test IT work item endpoints upstream. `search_test_cases` uses `POST /api/v2/projects/{projectId}/workItems/search` with `filter.types=["TestCases"]`.
 
-`get_test_case_steps` normalizes step and parameter fields from the fetched work item. `parameterize_test_case` updates matching step text with `{{parameterName}}`; Test IT parameter set persistence is represented upstream by iterations and is not expanded by this tool yet.
+`get_test_case_steps` normalizes step fields and returns upstream `iterations` from the fetched work item. `parameterize_test_case` only reuses existing Test IT parameters: it searches parameters by `projectId`, `name`, and `value`, writes matching IDs to work item `iterations`, and updates matching step text with `{{parameterName}}`. It does not create or update parameter dictionary entries.
 
 Step selectors use exactly one of:
 

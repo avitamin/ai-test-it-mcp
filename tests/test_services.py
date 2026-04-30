@@ -9,6 +9,11 @@ from mcp_server.services import TestItService
 class FakeClient:
     def __init__(self) -> None:
         self.calls = []
+        self.parameters = [
+            {"id": "param-existing", "name": "existing", "value": "ok"},
+            {"id": "param-user", "name": "user", "value": "admin"},
+            {"id": "param-password", "name": "password", "value": "secret"},
+        ]
 
     def list_entities(self, entity, **kwargs):
         self.calls.append(("list", entity, kwargs))
@@ -73,13 +78,19 @@ class FakeClient:
                 ],
                 "preconditionSteps": [],
                 "postconditionSteps": [],
-                "parameters": [{"name": "existing", "value": "ok"}],
+                "iterations": [],
             }
         }
 
     def update_work_item(self, work_item_id, data):
         self.calls.append(("update_work_item", work_item_id, data))
         return {"entity": data}
+
+    def search_parameters(self, **kwargs):
+        self.calls.append(("search_parameters", kwargs))
+        name = kwargs["body"].get("name")
+        items = [parameter for parameter in self.parameters if parameter["name"] == name]
+        return {"items": items, "page": kwargs["pagination"].page, "pageSize": kwargs["pagination"].page_size, "total": len(items), "nextPage": None}
 
     def create_shared_step(self, data):
         self.calls.append(("create_shared_step", data))
@@ -219,23 +230,63 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(update_call[2]["steps"][0]["workItemId"], "shared-1")
         self.assertEqual(update_call[2]["steps"][1]["id"], "s3")
 
-    def test_parameterize_test_case_rejects_conflicting_parameter(self) -> None:
+    def test_parameterize_test_case_requires_parameters_or_iterations(self) -> None:
         service = TestItService(FakeClient())
         with self.assertRaises(ValidationError):
-            service.parameterize_test_case(
-                {"testCaseId": "tc1", "parameters": [{"name": "existing", "value": "changed"}]}
-            )
+            service.parameterize_test_case({"testCaseId": "tc1", "projectId": "p1"})
 
-    def test_parameterize_test_case_merges_and_replaces_step_text(self) -> None:
+    def test_parameterize_test_case_uses_existing_parameter_and_replaces_step_text(self) -> None:
         client = FakeClient()
         service = TestItService(client)
         result = service.parameterize_test_case(
             {
                 "testCaseId": "tc1",
+                "projectId": "p1",
                 "parameters": [{"name": "user", "value": "admin"}],
                 "replacements": [{"value": "user", "parameterName": "user"}],
             }
         )
         self.assertEqual(result["changedParameters"], ["user"])
+        self.assertEqual(result["iterations"], [{"parameters": [{"id": "param-user"}]}])
+        search_call = client.calls[1]
+        self.assertEqual(search_call[0], "search_parameters")
+        self.assertEqual(search_call[1]["body"], {"name": "user", "isDeleted": False, "projectIds": ["p1"]})
         update_call = client.calls[-1]
         self.assertEqual(update_call[2]["steps"][1]["action"], "Enter {{user}}")
+        self.assertEqual(update_call[2]["iterations"], [{"parameters": [{"id": "param-user"}]}])
+
+    def test_parameterize_test_case_builds_multiple_iterations(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        result = service.parameterize_test_case(
+            {
+                "testCaseId": "tc1",
+                "projectId": "p1",
+                "iterations": [
+                    {"parameters": [{"name": "user", "value": "admin"}]},
+                    {"parameters": [{"name": "password", "value": "secret"}]},
+                ],
+            }
+        )
+        self.assertEqual(
+            result["iterations"],
+            [
+                {"parameters": [{"id": "param-user"}]},
+                {"parameters": [{"id": "param-password"}]},
+            ],
+        )
+
+    def test_parameterize_test_case_rejects_missing_parameter_without_update(self) -> None:
+        client = FakeClient()
+        service = TestItService(client)
+        with self.assertRaises(ValidationError) as ctx:
+            service.parameterize_test_case(
+                {
+                    "testCaseId": "tc1",
+                    "projectId": "p1",
+                    "parameters": [{"name": "user", "value": "missing"}],
+                    "replacements": [{"value": "user", "parameterName": "user"}],
+                }
+            )
+        self.assertEqual(ctx.exception.details["missingParameters"], [{"name": "user", "value": "missing"}])
+        self.assertNotIn("update_work_item", [call[0] for call in client.calls])

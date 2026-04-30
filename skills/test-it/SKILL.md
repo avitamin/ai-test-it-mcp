@@ -221,7 +221,7 @@ Response guidance: state the shared step ID and replaced step indexes. Test IT s
 
 User asks: "Добавь параметризацию в тест-кейс."
 
-Required context: confirmed `testCaseId`, parameter names and defaults/values, and optional literal replacements in steps. First call `get_test_case_steps` when parameters need to be found, created, or clarified from existing step text. This tool updates step text placeholders; Test IT parameter-set persistence through iterations is not expanded yet.
+Required context: confirmed `testCaseId`, `projectId`, existing parameter names/values, and optional literal replacements in steps. First call `get_test_case_steps` when parameters need to be clarified from existing step text. The tool only reuses existing Test IT parameters, writes their IDs to work item `iterations`, and updates step text placeholders; if a parameter is missing, ask the user to create it in Test IT or choose an existing value.
 
 MCP call:
 
@@ -230,6 +230,7 @@ MCP call:
   "tool": "parameterize_test_case",
   "arguments": {
     "testCaseId": "replace-test-case-id",
+    "projectId": "project-id",
     "parameters": [
       {"name": "user", "value": "admin"}
     ],
@@ -240,7 +241,7 @@ MCP call:
 }
 ```
 
-Response guidance: summarize changed parameter names and whether step text was updated. If a parameter already exists with a different definition, resolve the conflict with the user before setting `allowParameterOverwrite`.
+Response guidance: summarize changed parameter names, reused parameter IDs, and whether step text was updated. If the tool reports `missingParameters`, stop and ask the user to create those parameters in Test IT or choose existing values.
 
 ### Draft Test Case From Code
 
