@@ -31,6 +31,36 @@ export TESTIT_AUTH_TYPE="private_token"
 
 `TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет authorization prefix. По умолчанию используются приватные API-токены Test IT, документированные как `PrivateToken {API Secret Key}`. Используйте `TESTIT_AUTH_TYPE=bearer`, только если нужен Bearer token.
 
+## Установка Test IT Skill
+
+Репозиторий также поставляет распространяемый skill `test-it` для агентов, которые поддерживают [skills.sh](https://skills.sh/). Skill объясняет агенту, как безопасно использовать настроенный MCP server `ai_test_it`; он не запускает и не настраивает MCP server сам.
+
+Установите skill для Codex из этого GitHub repository:
+
+```bash
+npx skills add avitamin/ai-test-it-mcp --skill test-it --agent codex --yes
+```
+
+Для interactive default install flow, включая другие поддерживаемые agents, выполните:
+
+```bash
+npx skills add avitamin/ai-test-it-mcp --skill test-it
+```
+
+Чтобы установить skill глобально, а не в текущий project, добавьте `--global`. Чтобы проверить, что skill обнаруживается из локального checkout, выполните:
+
+```bash
+npx skills add . --skill test-it --list
+```
+
+После установки используйте prompts вроде:
+
+```text
+Use $test-it to show test plans for project <project name>.
+```
+
+Агенту всё равно нужен MCP server с именем `ai_test_it`, настроенный с `TESTIT_BASE_URL`, `TESTIT_TOKEN` и optional settings, описанными выше.
+
 ## Прямой запуск
 
 Прямой запуск полезен для локальных проверок, разработки и protocol debugging.

@@ -1,0 +1,11 @@
+interface:
+  display_name: "Test IT"
+  short_description: "Use a Test IT MCP server"
+  default_prompt: "Use $test-it to work with Test IT through the configured MCP server."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "ai_test_it"
+      description: "Test IT MCP server"
+      transport: "stdio"
