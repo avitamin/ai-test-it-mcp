@@ -6,6 +6,8 @@
 
 Основная документация проекта находится в [README.ru.md](../README.ru.md).
 
+Эта версия сервера ориентируется на контракт Pegasus/Test IT API v2. Используйте `.local/swagger-v2.json` как локальный OpenAPI cache при сравнении smoke checks с целевой формой API.
+
 ## Что проверяется
 
 - работает `Authorization: PrivateToken <token>`

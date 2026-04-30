@@ -96,7 +96,7 @@ See [MCP tool catalog](docs/mcp-tools.md) for required arguments, pagination, re
 
 ## API Notes
 
-The implementation follows assumptions validated against a Test IT Swagger contract. Use the Swagger UI and OpenAPI source exposed by your own Test IT instance when checking endpoint behavior.
+This server version targets the Pegasus/Test IT API v2 contract. For API-shape checks, use the local OpenAPI cache in `.local/swagger-v2.json`.
 
 Notable behavior:
 

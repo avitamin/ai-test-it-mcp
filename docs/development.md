@@ -54,6 +54,8 @@ These smoke checks validate Test IT endpoints directly, not the MCP `stdio` prot
 
 This server does not blindly mirror all Test IT endpoints.
 
+This server version targets the Pegasus/Test IT API v2 contract. Keep a local OpenAPI cache at `.local/swagger-v2.json` for endpoint and schema checks. The `.local/` directory is ignored and should not be committed.
+
 The MCP surface is normalized for LLM/tool callers, but some upstream API constraints still matter:
 
 - `list_test_suites` needs `testPlanId`
@@ -61,7 +63,7 @@ The MCP surface is normalized for LLM/tool callers, but some upstream API constr
 - `list_test_results` is search-based, not a simple collection `GET`
 - some list endpoints in Test IT return arrays directly, not paginated envelopes
 
-If you change API routing assumptions, validate them against the live Swagger first. The most likely breakages are endpoint shape differences between Test IT deployments.
+If you change API routing assumptions, validate them against the cached v2 contract first. The most likely breakages are endpoint shape differences between Test IT deployments.
 
 ## Limitations
 

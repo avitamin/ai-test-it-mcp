@@ -6,6 +6,8 @@
 
 Main project documentation lives in [README.md](../README.md).
 
+This server version targets the Pegasus/Test IT API v2 contract. Use `.local/swagger-v2.json` as the local OpenAPI cache when comparing these smoke checks with the target API shape.
+
 ## What it verifies
 
 - `Authorization: PrivateToken <token>` works

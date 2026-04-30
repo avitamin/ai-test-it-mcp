@@ -96,7 +96,7 @@ mcp-server
 
 ## Заметки по API
 
-Реализация следует предположениям, проверенным по Test IT Swagger contract. Для проверки endpoint behavior используйте Swagger UI и OpenAPI source, доступные в вашем Test IT instance.
+Эта версия сервера ориентируется на контракт Pegasus/Test IT API v2. Для проверки формы API используйте локальный OpenAPI cache в `.local/swagger-v2.json`.
 
 Важное поведение:
 

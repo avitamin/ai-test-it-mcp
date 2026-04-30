@@ -1,4 +1,5 @@
 http-client.private.env.json
+.local/
 .codex/config.toml
 __pycache__/
 *.py[cod]
