@@ -238,6 +238,70 @@ class TestItClient:
             total,
         )
 
+    def search_work_items(
+        self,
+        *,
+        project_id: str | None = None,
+        pagination: PaginationInput | None = None,
+        filters: dict[str, Any] | None = None,
+        body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        resolved_pagination = pagination or PaginationInput()
+        query = {
+            "Skip": (resolved_pagination.page - 1) * resolved_pagination.page_size,
+            "Take": resolved_pagination.page_size,
+        }
+        if filters:
+            query.update(filters)
+        path = "/api/v2/workItems/search"
+        if project_id:
+            path = f"/api/v2/projects/{project_id}/workItems/search"
+        payload = self._request(
+            "POST",
+            path,
+            operation="search_work_items",
+            entity="workItems",
+            query=query,
+            body=body or {},
+        )
+        items, total = self._extract_items(payload)
+        return paginated_from_upstream(
+            items,
+            resolved_pagination.page,
+            resolved_pagination.page_size,
+            total,
+        )
+
+    def search_parameters(
+        self,
+        *,
+        pagination: PaginationInput | None = None,
+        filters: dict[str, Any] | None = None,
+        body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        resolved_pagination = pagination or PaginationInput()
+        query = {
+            "Skip": (resolved_pagination.page - 1) * resolved_pagination.page_size,
+            "Take": resolved_pagination.page_size,
+        }
+        if filters:
+            query.update(filters)
+        payload = self._request(
+            "POST",
+            "/api/v2/parameters/search",
+            operation="search_parameters",
+            entity="parameters",
+            query=query,
+            body=body or {},
+        )
+        items, total = self._extract_items(payload)
+        return paginated_from_upstream(
+            items,
+            resolved_pagination.page,
+            resolved_pagination.page_size,
+            total,
+        )
+
     def get_entity(self, entity: str, entity_id: str) -> dict[str, Any]:
         route = self._entity_route(entity)
         payload = self._request(
@@ -247,6 +311,9 @@ class TestItClient:
             entity=route.singular,
         )
         return {"entity": payload}
+
+    def get_work_item(self, work_item_id: str) -> dict[str, Any]:
+        return self.get_entity("test_case", work_item_id)
 
     def create_entity(self, entity: str, data: dict[str, Any]) -> dict[str, Any]:
         route = self._entity_route(entity)
@@ -261,6 +328,8 @@ class TestItClient:
         return {"entity": payload, "entityId": created_id}
 
     def update_entity(self, entity: str, entity_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        if entity == "test_case":
+            return self.update_work_item(entity_id, data)
         route = self._entity_route(entity)
         payload = self._request(
             "PUT",
@@ -270,6 +339,38 @@ class TestItClient:
             body=data,
         )
         return {"entity": payload}
+
+    def update_work_item(self, work_item_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        payload = dict(data)
+        payload.setdefault("id", work_item_id)
+        updated = self._request(
+            "PUT",
+            "/api/v2/workItems",
+            operation="update_work_item",
+            entity="workItem",
+            body=payload,
+        )
+        return {"entity": updated}
+
+    def create_shared_step(self, data: dict[str, Any]) -> dict[str, Any]:
+        payload = self._request(
+            "POST",
+            "/api/v2/workItems",
+            operation="create_shared_step",
+            entity="workItem",
+            body=data,
+        )
+        created_id = payload.get("id") if isinstance(payload, dict) else None
+        return {"entity": payload, "entityId": created_id}
+
+    def get_shared_step_references(self, shared_step_id: str) -> dict[str, Any]:
+        payload = self._request(
+            "GET",
+            f"/api/v2/workItems/sharedSteps/{shared_step_id}/references",
+            operation="get_shared_step_references",
+            entity="workItems",
+        )
+        return {"items": payload if isinstance(payload, list) else payload}
 
     def delete_entity(self, entity: str, entity_id: str) -> dict[str, Any]:
         route = self._entity_route(entity)

@@ -19,7 +19,7 @@ pwd
 
 В примерах ниже `/absolute/path/to/ai-test-it-mcp/main.py` используется как placeholder. Замените его на реальный путь на вашей машине.
 
-`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет префикс `Bearer`.
+`TESTIT_TOKEN` должен содержать только raw token value. Сервер сам добавляет authorization prefix; default — `PrivateToken`.
 
 ## Codex
 
@@ -82,7 +82,7 @@ claude mcp list
 - Если server не запускается, проверьте, что путь к `main.py` абсолютный и существует.
 - Если tools не появились, перезапустите или обновите клиент и проверьте `/mcp`.
 - Если запуск завершается по timeout, увеличьте MCP startup timeout в клиенте.
-- Если authentication fails, проверьте, что `TESTIT_BASE_URL` указывает на ваш Test IT instance, а `TESTIT_TOKEN` указан raw, без `Bearer`.
+- Если authentication fails, проверьте, что `TESTIT_BASE_URL` указывает на ваш Test IT instance, `TESTIT_TOKEN` указан raw без authorization prefix, а `TESTIT_AUTH_TYPE` соответствует типу токена.
 - Если SSL verification fails для локального или private instance, задавайте `TESTIT_VERIFY_SSL=false` только когда это допустимо для вашего окружения.
 
 ## References

@@ -6,24 +6,28 @@
 
 Main project documentation lives in [README.md](../README.md).
 
+This server version targets the Pegasus/Test IT API v2 contract. Use `.local/swagger-v2.json` as the local OpenAPI cache when comparing these smoke checks with the target API shape.
+
 ## What it verifies
 
-- `Authorization: Bearer <token>` works
+- `Authorization: PrivateToken <token>` works
 - `/api/v2` base path works
 - Core read-only endpoints respond for:
   - projects
   - test plans by project
   - test suites by test plan
   - project work items
+  - shared step search and references
   - project test runs
   - test results search
 
 ## How to run
 
-1. Fill `http_client/http-client.env.json`
-2. Open `http_client/testit-smoke.http` in IntelliJ IDEA or PyCharm
-3. Select the `local` environment
-4. Run requests one by one
+1. Fill non-secret values in `http_client/http-client.env.json`
+2. Put the raw PAT token in `http_client/http-client.private.env.json`
+3. Open `http_client/testit-smoke.http` in IntelliJ IDEA or PyCharm
+4. Select the `prod` environment
+5. Run requests one by one
 
 ## Important note
 

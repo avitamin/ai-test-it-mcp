@@ -66,7 +66,7 @@ TESTIT_VERIFY_SSL = "true"
 LOG_LEVEL = "INFO"
 ```
 
-`TESTIT_TOKEN` must be raw; the server adds `Bearer`. Keep real Test IT tokens and private endpoints only in ignored local config or shell environment.
+`TESTIT_TOKEN` must be raw; the server adds the authorization prefix selected by `TESTIT_AUTH_TYPE`, defaulting to `PrivateToken`. Keep real Test IT tokens and private endpoints only in ignored local config or shell environment.
 
 ## GitHub MCP
 

@@ -19,7 +19,7 @@ pwd
 
 The examples below use `/absolute/path/to/ai-test-it-mcp/main.py` as a placeholder. Replace it with the real path on your machine.
 
-`TESTIT_TOKEN` must contain only the raw token value. The server adds the `Bearer` prefix itself.
+`TESTIT_TOKEN` must contain only the raw token value. The server adds the authorization prefix itself; the default is `PrivateToken`.
 
 ## Codex
 
@@ -82,7 +82,7 @@ Inside Claude Code, check server status with:
 - If the server does not start, confirm the `main.py` path is absolute and exists.
 - If tools are missing, restart or refresh the client and check `/mcp`.
 - If startup times out, increase the client's MCP startup timeout.
-- If authentication fails, confirm `TESTIT_BASE_URL` points to your Test IT instance and `TESTIT_TOKEN` is raw, without `Bearer`.
+- If authentication fails, confirm `TESTIT_BASE_URL` points to your Test IT instance, `TESTIT_TOKEN` is raw without an authorization prefix, and `TESTIT_AUTH_TYPE` matches the token type.
 - If SSL verification fails for a local or private instance, set `TESTIT_VERIFY_SSL=false` only when that is acceptable for your environment.
 
 ## References

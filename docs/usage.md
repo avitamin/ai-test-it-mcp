@@ -190,12 +190,123 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 }
 ```
 
-### List Test Runs
+### Extract Shared Step From Test Case Steps
+
+`stepIndexes` are 1-based positions in the current test case. Use `stepIds` instead when upstream step IDs are known.
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "extract_shared_step_from_test_case_steps",
+    "arguments": {
+      "projectId": "replace-project-id",
+      "sectionId": "replace-section-id",
+      "testCaseId": "replace-test-case-id",
+      "name": "Reusable login",
+      "state": "NotReady",
+      "priority": "Medium",
+      "stepIndexes": [1, 2, 3]
+    }
+  }
+}
+```
+
+### Replace Test Case Steps With Shared Step
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 9,
+  "method": "tools/call",
+  "params": {
+    "name": "replace_test_case_steps_with_shared_step",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "sharedStepId": "replace-shared-step-id",
+      "stepIds": ["replace-step-id"]
+    }
+  }
+}
+```
+
+High-impact write tools also support a preview/apply workflow. For example, preview a test case deletion first:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id"
+    }
+  }
+}
+```
+
+Then apply the same operation within 10 minutes by passing the returned `operationId` with the same arguments:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "method": "tools/call",
+  "params": {
+    "name": "apply_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "operationId": "replace-operation-id-from-preview"
+    }
+  }
+}
+```
+
+### Parameterize Test Case
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 12,
+  "method": "tools/call",
+  "params": {
+    "name": "parameterize_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "projectId": "project-id",
+      "parameters": [
+        {"name": "user", "value": "admin"}
+      ],
+      "replacements": [
+        {"value": "admin", "parameterName": "user"}
+      ]
+    }
+  }
+}
+```
+
+`parameters` is the short form for one Test IT iteration. For multiple data sets, pass `iterations` instead:
+
+```json
+{
+  "iterations": [
+    {"parameters": [{"name": "user", "value": "admin"}]},
+    {"parameters": [{"name": "user", "value": "viewer"}]}
+  ]
+}
+```
+
+The referenced parameters must already exist in Test IT for the project. The tool does not create parameter dictionary entries.
+
+### List Test Runs
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 13,
   "method": "tools/call",
   "params": {
     "name": "list_test_runs",
@@ -217,7 +328,7 @@ Failures are returned as JSON-RPC errors with normalized error codes in `error.d
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 9,
+  "id": 14,
   "method": "tools/call",
   "params": {
     "name": "list_test_results",

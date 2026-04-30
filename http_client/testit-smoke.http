@@ -1,8 +1,9 @@
 ### JetBrains HTTP Client smoke for Test IT REST API
 ### Usage:
-### 1. Select environment: `local`
-### 2. Fill values in `http_client/http-client.env.json`
-### 3. Run requests one by one
+### 1. Fill non-secret values in `http_client/http-client.env.json`
+### 2. Put the raw PAT token in `http_client/http-client.private.env.json`
+### 3. Select environment: `prod`
+### 4. Run requests one by one
 ###
 ### This checks the same auth/header style and core endpoints that the MCP server uses.
 
@@ -12,13 +13,14 @@
 @testSuiteId = {{testSuiteId}}
 @testPlanId = {{testPlanId}}
 @testCaseId = {{testCaseId}}
+@sharedStepId = {{sharedStepId}}
 @testRunId = {{testRunId}}
 @testResultId = {{testResultId}}
 
 ### List projects
 GET {{baseUrl}}/api/v2/projects?page=1&pageSize=10
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("projects status is 200", function() {
@@ -29,7 +31,7 @@ client.test("projects status is 200", function() {
 ### Get project
 GET {{baseUrl}}/api/v2/projects/{{projectId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("project status is 200", function() {
@@ -40,7 +42,7 @@ client.test("project status is 200", function() {
 ### List test suites
 GET {{baseUrl}}/api/v2/testPlans/{{testPlanId}}/testSuites
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test suites status is 200", function() {
@@ -51,7 +53,7 @@ client.test("test suites status is 200", function() {
 ### Get test suite
 GET {{baseUrl}}/api/v2/testSuites/{{testSuiteId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test suite status is 200", function() {
@@ -62,7 +64,7 @@ client.test("test suite status is 200", function() {
 ### List test plans
 GET {{baseUrl}}/api/v2/projects/{{projectId}}/testPlans
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test plans status is 200", function() {
@@ -73,7 +75,7 @@ client.test("test plans status is 200", function() {
 ### Get test plan
 GET {{baseUrl}}/api/v2/testPlans/{{testPlanId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test plan status is 200", function() {
@@ -84,7 +86,7 @@ client.test("test plan status is 200", function() {
 ### Search test cases
 GET {{baseUrl}}/api/v2/projects/{{projectId}}/workItems?Skip=0&Take=10
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test cases status is 200", function() {
@@ -95,7 +97,7 @@ client.test("test cases status is 200", function() {
 ### Get test case
 GET {{baseUrl}}/api/v2/workItems/{{testCaseId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test case status is 200", function() {
@@ -103,10 +105,41 @@ client.test("test case status is 200", function() {
 });
 %}
 
+### Search shared steps
+POST {{baseUrl}}/api/v2/projects/{{projectId}}/workItems/search?Skip=0&Take=10
+Accept: application/json
+Authorization: PrivateToken {{token}}
+Content-Type: application/json
+
+{
+  "filter": {
+    "projectIds": ["{{projectId}}"],
+    "types": ["SharedSteps"],
+    "isDeleted": false
+  }
+}
+
+> {%
+client.test("shared steps search status is 200", function() {
+  client.assert(response.status === 200, "Expected 200");
+});
+%}
+
+### Get shared step references
+GET {{baseUrl}}/api/v2/workItems/sharedSteps/{{sharedStepId}}/references
+Accept: application/json
+Authorization: PrivateToken {{token}}
+
+> {%
+client.test("shared step references status is 200", function() {
+  client.assert(response.status === 200, "Expected 200");
+});
+%}
+
 ### List test runs
 GET {{baseUrl}}/api/v2/projects/{{projectId}}/testRuns?notStarted=true&inProgress=true&stopped=true&completed=true&Skip=0&Take=10
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test runs status is 200", function() {
@@ -117,7 +150,7 @@ client.test("test runs status is 200", function() {
 ### Get test run
 GET {{baseUrl}}/api/v2/testRuns/{{testRunId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test run status is 200", function() {
@@ -128,7 +161,7 @@ client.test("test run status is 200", function() {
 ### List test results
 POST {{baseUrl}}/api/v2/testResults/search?Skip=0&Take=10
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 Content-Type: application/json
 
 {
@@ -144,7 +177,7 @@ client.test("test results status is 200", function() {
 ### Get test result
 GET {{baseUrl}}/api/v2/testResults/{{testResultId}}
 Accept: application/json
-Authorization: Bearer {{token}}
+Authorization: PrivateToken {{token}}
 
 > {%
 client.test("test result status is 200", function() {
@@ -155,7 +188,7 @@ client.test("test result status is 200", function() {
 ### Auth negative check
 GET {{baseUrl}}/api/v2/projects?page=1&pageSize=1
 Accept: application/json
-Authorization: Bearer invalid-token
+Authorization: PrivateToken invalid-token
 
 > {%
 client.test("invalid token is rejected", function() {

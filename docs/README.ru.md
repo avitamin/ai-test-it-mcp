@@ -10,6 +10,7 @@
 - [Быстрый старт для Codex и Claude Code](mcp-client-quickstart.ru.md): подключение этого server к Codex или Claude Code как локального `stdio` MCP server.
 - [Каталог MCP tools](mcp-tools.ru.md): доступные tools, обязательные аргументы, pagination, response shape и error model.
 - [HTTP Client smoke checks](../http_client/README.ru.md): JetBrains HTTP Client checks для предположений об upstream Test IT API.
+- [Runbook production MCP smoke](production-smoke-runbook.ru.md): безопасная ручная MCP `stdio` smoke-процедура для боевых контуров.
 
 ## Сопровождение проекта
 

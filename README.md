@@ -87,6 +87,7 @@ The tool set covers common Test IT workflows:
 - list and fetch projects
 - list, create, update, and fetch test plans and test suites
 - search, create, update, fetch, and delete test cases
+- inspect test case steps, create shared steps, replace case steps with shared steps, and parameterize test cases
 - list, create, update, fetch, and complete test runs
 - list, create, update, and fetch test results
 - link or unlink test cases to a test suite or test plan
@@ -95,7 +96,7 @@ See [MCP tool catalog](docs/mcp-tools.md) for required arguments, pagination, re
 
 ## API Notes
 
-The implementation follows assumptions validated against a Test IT Swagger contract. Use the Swagger UI and OpenAPI source exposed by your own Test IT instance when checking endpoint behavior.
+This server version targets the Pegasus/Test IT API v2 contract. For API-shape checks, use the local OpenAPI cache in `.local/swagger-v2.json`.
 
 Notable behavior:
 

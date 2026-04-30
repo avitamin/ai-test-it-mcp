@@ -190,12 +190,123 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
 }
 ```
 
-### List Test Runs
+### Extract Shared Step From Test Case Steps
+
+`stepIndexes` — 1-based позиции шагов в текущем test case. Используйте `stepIds`, если известны upstream step IDs.
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "extract_shared_step_from_test_case_steps",
+    "arguments": {
+      "projectId": "replace-project-id",
+      "sectionId": "replace-section-id",
+      "testCaseId": "replace-test-case-id",
+      "name": "Reusable login",
+      "state": "NotReady",
+      "priority": "Medium",
+      "stepIndexes": [1, 2, 3]
+    }
+  }
+}
+```
+
+### Replace Test Case Steps With Shared Step
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 9,
+  "method": "tools/call",
+  "params": {
+    "name": "replace_test_case_steps_with_shared_step",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "sharedStepId": "replace-shared-step-id",
+      "stepIds": ["replace-step-id"]
+    }
+  }
+}
+```
+
+High-impact write tools также поддерживают workflow preview/apply. Например, сначала preview удаления test case:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id"
+    }
+  }
+}
+```
+
+Затем примените ту же операцию в течение 10 минут, передав возвращенный `operationId` с теми же аргументами:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 11,
+  "method": "tools/call",
+  "params": {
+    "name": "apply_delete_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "operationId": "replace-operation-id-from-preview"
+    }
+  }
+}
+```
+
+### Parameterize Test Case
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 12,
+  "method": "tools/call",
+  "params": {
+    "name": "parameterize_test_case",
+    "arguments": {
+      "testCaseId": "replace-test-case-id",
+      "projectId": "project-id",
+      "parameters": [
+        {"name": "user", "value": "admin"}
+      ],
+      "replacements": [
+        {"value": "admin", "parameterName": "user"}
+      ]
+    }
+  }
+}
+```
+
+`parameters` - короткая форма для одной iteration Test IT. Для нескольких наборов данных передайте `iterations`:
+
+```json
+{
+  "iterations": [
+    {"parameters": [{"name": "user", "value": "admin"}]},
+    {"parameters": [{"name": "user", "value": "viewer"}]}
+  ]
+}
+```
+
+Указанные параметры уже должны существовать в Test IT для проекта. Tool не создает записи справочника параметров.
+
+### List Test Runs
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 13,
   "method": "tools/call",
   "params": {
     "name": "list_test_runs",
@@ -217,7 +328,7 @@ Transport: `stdio` with newline-delimited JSON-RPC messages.
 ```json
 {
   "jsonrpc": "2.0",
-  "id": 9,
+  "id": 14,
   "method": "tools/call",
   "params": {
     "name": "list_test_results",
