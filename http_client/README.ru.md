@@ -8,7 +8,7 @@
 
 ## Что проверяется
 
-- работает `Authorization: Bearer <token>`
+- работает `Authorization: PrivateToken <token>`
 - работает base path `/api/v2`
 - Core read-only endpoints отвечают для:
   - projects
@@ -21,10 +21,11 @@
 
 ## Как запускать
 
-1. Заполните `http_client/http-client.env.json`
-2. Откройте `http_client/testit-smoke.http` в IntelliJ IDEA или PyCharm
-3. Выберите environment `local`
-4. Запускайте requests по одному
+1. Заполните non-secret values в `http_client/http-client.env.json`
+2. Поместите raw PAT token в `http_client/http-client.private.env.json`
+3. Откройте `http_client/testit-smoke.http` в IntelliJ IDEA или PyCharm
+4. Выберите environment `prod`
+5. Запускайте requests по одному
 
 ## Важное замечание
 
